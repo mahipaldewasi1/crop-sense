@@ -20,12 +20,12 @@ export default function LoginScreen() {
 
   function detectLocation() {
     if (!navigator.geolocation) {
-      setLocation({ lat: 26.6, lng: 74.86, label: "Kishangarh, Rajasthan" });
+      setLocation({ lat: 26.6, lng: 74.86, label: "jaipur, Rajasthan" });
       return;
     }
     navigator.geolocation.getCurrentPosition(
       (pos) => setLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude, label: "Current location" }),
-      () => setLocation({ lat: 26.6, lng: 74.86, label: "Kishangarh, Rajasthan" }) // fallback for demo
+      () => setLocation({ lat: 26.6, lng: 74.86, label: "jaipur, Rajasthan" }) // fallback for demo
     );
   }
 
@@ -34,7 +34,7 @@ export default function LoginScreen() {
     setError("");
 
     if (!phone || !password || (mode === "register" && !name)) {
-      setError("Please fill all fields");
+      setError("don't be oversmart , fill all feilds");
       return;
     }
 
@@ -84,14 +84,14 @@ export default function LoginScreen() {
         {mode === "register" && (
           <>
             <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.inkSoft, marginBottom: 6 }}>NAME</label>
-            <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Ramesh Kumar" style={inputStyle} />
+            <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Full Name" style={inputStyle} />
           </>
         )}
 
         <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.inkSoft, marginBottom: 6 }}>MOBILE NUMBER</label>
         <div style={{ ...inputRow }}>
           <User size={16} color={COLORS.inkSoft} />
-          <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="98765 43210" style={inputBare} />
+          <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Mobile Number" style={inputBare} />
         </div>
 
         <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.inkSoft, marginBottom: 6 }}>PASSWORD</label>
