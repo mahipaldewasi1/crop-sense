@@ -8,7 +8,7 @@ import { uploadScan } from "../api/client";
 import { useLanguage } from "../i18n/LanguageContext";
 
 export default function ScanScreen() {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const navigate = useNavigate();
   const cameraInputRef = useRef(null);
   const galleryInputRef = useRef(null);
