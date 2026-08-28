@@ -115,14 +115,14 @@ export default function LoginScreen() {
             {mode === "register" && (
               <>
                 <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.inkSoft, marginBottom: 6 }}>{t("name")}</label>
-                <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Ramesh Kumar" style={inputStyle} />
+                <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Full Name" style={inputStyle} />
               </>
             )}
 
             <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.inkSoft, marginBottom: 6 }}>{t("mobileNumber")}</label>
             <div style={inputRow}>
               <User size={16} color={COLORS.inkSoft} />
-              <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="98765 43210" style={inputBare} />
+              <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Mobile Number" style={inputBare} />
             </div>
 
             <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.inkSoft, marginBottom: 6 }}>{t("password")}</label>

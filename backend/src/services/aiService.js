@@ -1,15 +1,19 @@
 /**
  * aiService.js
  * ------------
- * Har disease profile ab teeno languages mein hai (en/hi/mr).
- * detectDisease() ab `lang` parameter leta hai, aur usi language mein
- * result deta hai. Jab real AI model aayega, sirf FUTURE section wala
- * hissa badlega — ye translation TABLE reuse hogi, kyunki disease classes
- * fixed/finite hoti hain (model training ke time hi decide ho jaati hain).
+ * Har disease profile ab teeno languages mein hai (en/hi/mr), plus ek
+ * fixed `classKey` jo language-neutral hai. detectDiseaseClass() sirf
+ * classKey deta hai; translateProfile(classKey, lang) usi se translated
+ * result banata hai — isliye ek hi scan ko baad mein kisi bhi language
+ * mein dobara translate kiya ja sakta hai, chahe wo kab save hua ho.
+ * Jab real AI model aayega, sirf FUTURE section wala hissa badlega — ye
+ * translation TABLE reuse hogi, kyunki disease classes fixed/finite hoti
+ * hain (model training ke time hi decide ho jaati hain).
  */
 
 const DISEASE_PROFILES = [
   {
+    classKey: "Tomato_Early_Blight",
     crop: { en: "Tomato", hi: "टमाटर", mr: "टोमॅटो" },
     disease: { en: "Early Blight", hi: "अगेती झुलसा", mr: "लवकर करपा" },
     severity: "Medium",
@@ -22,6 +26,7 @@ const DISEASE_PROFILES = [
     },
   },
   {
+    classKey: "Tomato_Leaf_Curl_Virus",
     crop: { en: "Tomato", hi: "टमाटर", mr: "टोमॅटो" },
     disease: { en: "Leaf Curl Virus", hi: "पत्ती मरोड़ वायरस", mr: "पान कुरळी विषाणू" },
     severity: "High",
@@ -34,6 +39,7 @@ const DISEASE_PROFILES = [
     },
   },
   {
+    classKey: "Wheat_Healthy",
     crop: { en: "Wheat", hi: "गेहूं", mr: "गहू" },
     disease: { en: "Healthy", hi: "स्वस्थ", mr: "निरोगी" },
     severity: "Low",
@@ -46,6 +52,7 @@ const DISEASE_PROFILES = [
     },
   },
   {
+    classKey: "Potato_Late_Blight",
     crop: { en: "Potato", hi: "आलू", mr: "बटाटा" },
     disease: { en: "Late Blight", hi: "पछेती झुलसा", mr: "उशिरा करपा" },
     severity: "High",
@@ -58,6 +65,7 @@ const DISEASE_PROFILES = [
     },
   },
   {
+    classKey: "Cotton_Bacterial_Blight",
     crop: { en: "Cotton", hi: "कपास", mr: "कापूस" },
     disease: { en: "Bacterial Blight", hi: "जीवाणु झुलसा", mr: "जिवाणू करपा" },
     severity: "Medium",
@@ -72,14 +80,37 @@ const DISEASE_PROFILES = [
 ];
 
 /**
- * lang: "en" | "hi" | "mr" — default "en" agar kuch na bheja jaye
+ * detectDiseaseClass()
+ * --------------------
+ * Sirf ek language-neutral classKey lautata hai (jaise "Tomato_Early_Blight").
+ * Isi classKey ko DB mein store karna hai — koi translated text nahi.
+ * Yahi wo cheez hai jo "purana scan history language switch pe translate
+ * nahi hota" bug ko fix karti hai: agar translated string save kar denge,
+ * to future mein language badalne par usse wapas translate nahi kar sakte.
+ * classKey fixed rehta hai, aur translation hamesha isi se dobara nikalte hain.
  */
-function detectDisease(imageBuffer, lang = "en") {
+function detectDiseaseClass(imageBuffer) {
   const seed = imageBuffer && imageBuffer.length ? imageBuffer.length : Date.now();
   const index = seed % DISEASE_PROFILES.length;
-  const profile = DISEASE_PROFILES[index];
+  return DISEASE_PROFILES[index].classKey;
+}
+
+/**
+ * translateProfile(classKey, lang)
+ * ---------------------------------
+ * classKey se profile dhoondh kar requested language mein translate karke
+ * deta hai. Isko scan create karte waqt bhi bula sakte hain (turant result
+ * dikhane ke liye), aur history fetch karte waqt bhi (jab user ne language
+ * switch kar li ho) — kyunki dono baar classKey se hi dobara translate hota
+ * hai, saved text se nahi.
+ * lang: "en" | "hi" | "mr" — default "en" agar kuch na bheja jaye
+ */
+function translateProfile(classKey, lang = "en") {
+  const profile = DISEASE_PROFILES.find((p) => p.classKey === classKey);
+  if (!profile) return null;
 
   return {
+    classKey,
     crop: profile.crop[lang] || profile.crop.en,
     disease: profile.disease[lang] || profile.disease.en,
     severity: profile.severity, // "Low"/"Medium"/"High" hamesha English mein — frontend isko already translate karta hai badge ke liye
@@ -96,12 +127,10 @@ Us class name ko upar wali DISEASE_PROFILES table mein match karke
 translated version nikaal lena — poora translation kaam already ho chuka
 hoga, sirf lookup karna hoga:
 
-async function detectDisease(imageBuffer, lang = "en") {
+async function detectDiseaseClass(imageBuffer) {
   const response = await axios.post(process.env.AI_SERVICE_URL, imageBuffer, {...});
-  const predictedClass = response.data.class; // e.g. "Tomato_Early_Blight"
-  const profile = DISEASE_PROFILES.find(p => p.classKey === predictedClass);
-  return { ...profile translated as above... };
+  return response.data.class; // e.g. "Tomato_Early_Blight" — translateProfile() still does the rest
 }
 */
 
-module.exports = { detectDisease };
+module.exports = { detectDiseaseClass, translateProfile, DISEASE_PROFILES };

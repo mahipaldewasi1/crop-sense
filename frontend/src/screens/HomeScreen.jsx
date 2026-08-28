@@ -11,17 +11,18 @@ const SEVERITY_KEY = { Low: "severityLow", Medium: "severityMedium", High: "seve
 
 export default function HomeScreen() {
   const { user } = useAuth();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const navigate = useNavigate();
   const [recent, setRecent] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getScanHistory()
+    setLoading(true);
+    getScanHistory(lang)
       .then((data) => setRecent(data.scans || []))
       .catch(() => setRecent([]))
       .finally(() => setLoading(false));
-  }, []);
+  }, [lang]); // re-fetch (re-translate) whenever the user switches language, so old scans update too
 
   return (
     <>

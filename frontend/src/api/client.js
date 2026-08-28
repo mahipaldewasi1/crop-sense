@@ -48,8 +48,8 @@ export async function uploadScan(imageFile, lang = "en") {
   return handleResponse(res);
 }
 
-export async function getScanHistory() {
-  const res = await fetch(`${API_URL}/scan/history`, {
+export async function getScanHistory(lang = "en") {
+  const res = await fetch(`${API_URL}/scan/history?lang=${lang}`, {
     headers: { Authorization: `Bearer ${getToken()}` },
   });
   return handleResponse(res);
