@@ -2,12 +2,15 @@ from fastapi import FastAPI, File, Form, UploadFile, HTTPException
 from PIL import Image
 from transformers import AutoModelForImageClassification
 from torchvision import transforms
+
 import torch
 import io
 
+
 app = FastAPI(title="CropSense ML Service")
 
-MODEL_ID = "yanami3/agri-plant-disease-resnet50"
+
+MODEL_ID = "linkanjarad/mobilenet_v2_1.0_224-plant-disease-identification"
 
 
 # ---------------------------------------------------------
@@ -40,27 +43,29 @@ transform = transforms.Compose(
 
 CROP_LABELS = {
     "tomato": [
-        "Tomato___Bacterial_spot",
-        "Tomato___Early_blight",
-        "Tomato___Late_blight",
-        "Tomato___Leaf_Mold",
-        "Tomato___Septoria_leaf_spot",
-        "Tomato___Spider_mites Two-spotted_spider_mite",
-        "Tomato___Target_Spot",
-        "Tomato___Tomato_Yellow_Leaf_Curl_Virus",
-        "Tomato___Tomato_mosaic_virus",
-        "Tomato___healthy",
+        "Tomato with Bacterial Spot",
+        "Tomato with Early Blight",
+        "Tomato with Late Blight",
+        "Tomato with Leaf Mold",
+        "Tomato with Septoria Leaf Spot",
+        "Tomato with Spider Mites or Two-spotted Spider Mite",
+        "Tomato with Target Spot",
+        "Tomato Yellow Leaf Curl Virus",
+        "Tomato Mosaic Virus",
+        "Healthy Tomato Plant",
     ],
+
     "potato": [
-        "Potato___Early_blight",
-        "Potato___Late_blight",
-        "Potato___healthy",
+        "Potato with Early Blight",
+        "Potato with Late Blight",
+        "Healthy Potato Plant",
     ],
+
     "maize": [
-        "Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot",
-        "Corn_(maize)___Common_rust_",
-        "Corn_(maize)___Northern_Leaf_Blight",
-        "Corn_(maize)___healthy",
+        "Corn (Maize) with Cercospora and Gray Leaf Spot",
+        "Corn (Maize) with Common Rust",
+        "Corn (Maize) with Northern Leaf Blight",
+        "Healthy Corn (Maize) Plant",
     ],
 }
 
@@ -155,8 +160,7 @@ async def predict(
                 detail="No classes found for selected crop",
             )
 
-        # 8. IMPORTANT:
-        #    Softmax only across the selected crop's classes
+        # 8. Softmax only across selected crop classes
         crop_logits = torch.tensor(
             [item["logit"] for item in crop_items]
         )
