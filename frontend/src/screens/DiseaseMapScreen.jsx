@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { MapPin, AlertTriangle } from "lucide-react";
+import { MapPin, AlertTriangle, ChevronDown, X } from "lucide-react";
 import DiseaseHotspotMap from "../components/DiseaseHotspotMap";
 import { COLORS } from "../styles/theme";
 
@@ -56,12 +56,45 @@ const [riskFilter, setRiskFilter] = useState("All");
 
   return (
     <div
+      className="cs-animate-in"
       style={{
         maxWidth: 1100,
         margin: "0 auto",
         padding: "24px 20px 40px",
       }}
     >
+      <style>{`
+        .cs-filter-select {
+          appearance: none; -webkit-appearance: none;
+          transition: border-color 0.16s ease, box-shadow 0.16s ease, background-color 0.16s ease;
+        }
+        .cs-filter-wrap:hover .cs-filter-select {
+          border-color: ${COLORS.leaf} !important;
+        }
+        .cs-filter-select:focus {
+          outline: none;
+          border-color: ${COLORS.forest} !important;
+          box-shadow: 0 0 0 3px rgba(31,58,46,0.12);
+        }
+        .cs-filter-wrap { position: relative; }
+        .cs-filter-chevron {
+          position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+          pointer-events: none;
+        }
+        .cs-clear-filters {
+          transition: border-color 0.16s ease, color 0.16s ease, background-color 0.16s ease;
+        }
+        .cs-clear-filters:hover {
+          border-color: ${COLORS.danger}; color: ${COLORS.danger};
+        }
+        .cs-stat-card {
+          transition: transform 0.16s ease, box-shadow 0.16s ease;
+        }
+        .cs-stat-card:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 12px 28px -18px rgba(21,40,31,0.3);
+        }
+      `}</style>
       <div style={{ marginBottom: 20 }}>
         <p
           style={{
@@ -101,64 +134,95 @@ const [riskFilter, setRiskFilter] = useState("All");
 <div
   style={{
     display: "flex",
+    alignItems: "center",
     gap: 10,
     flexWrap: "wrap",
     marginBottom: 14,
   }}
 >
-  <select
-    value={cropFilter}
-    onChange={(e) => setCropFilter(e.target.value)}
-    style={{
-      padding: "9px 12px",
-      borderRadius: 10,
-      border: `1px solid ${COLORS.line}`,
-      background: COLORS.cream,
-      color: COLORS.forest,
-      fontSize: 12,
-      cursor: "pointer",
-    }}
-  >
-    <option value="All">All Crops</option>
-    <option value="Tomato">Tomato</option>
-    <option value="Potato">Potato</option>
-  </select>
+  <div className="cs-filter-wrap">
+    <select
+      value={cropFilter}
+      onChange={(e) => setCropFilter(e.target.value)}
+      className="cs-filter-select"
+      style={{
+        padding: "9px 32px 9px 12px",
+        borderRadius: 10,
+        border: `1.5px solid ${cropFilter !== "All" ? COLORS.forest : COLORS.line}`,
+        background: cropFilter !== "All" ? "#EAF1E6" : COLORS.cream,
+        color: COLORS.forest,
+        fontSize: 12,
+        fontWeight: cropFilter !== "All" ? 700 : 500,
+        cursor: "pointer",
+      }}
+    >
+      <option value="All">All Crops</option>
+      <option value="Tomato">Tomato</option>
+      <option value="Potato">Potato</option>
+    </select>
+    <ChevronDown size={14} color={COLORS.inkSoft} className="cs-filter-chevron" />
+  </div>
 
-  <select
-    value={diseaseFilter}
-    onChange={(e) => setDiseaseFilter(e.target.value)}
-    style={{
-      padding: "9px 12px",
-      borderRadius: 10,
-      border: `1px solid ${COLORS.line}`,
-      background: COLORS.cream,
-      color: COLORS.forest,
-      fontSize: 12,
-      cursor: "pointer",
-    }}
-  >
-    <option value="All">All Diseases</option>
-    <option value="Late Blight">Late Blight</option>
-    <option value="Early Blight">Early Blight</option>
-  </select>
+  <div className="cs-filter-wrap">
+    <select
+      value={diseaseFilter}
+      onChange={(e) => setDiseaseFilter(e.target.value)}
+      className="cs-filter-select"
+      style={{
+        padding: "9px 32px 9px 12px",
+        borderRadius: 10,
+        border: `1.5px solid ${diseaseFilter !== "All" ? COLORS.forest : COLORS.line}`,
+        background: diseaseFilter !== "All" ? "#EAF1E6" : COLORS.cream,
+        color: COLORS.forest,
+        fontSize: 12,
+        fontWeight: diseaseFilter !== "All" ? 700 : 500,
+        cursor: "pointer",
+      }}
+    >
+      <option value="All">All Diseases</option>
+      <option value="Late Blight">Late Blight</option>
+      <option value="Early Blight">Early Blight</option>
+    </select>
+    <ChevronDown size={14} color={COLORS.inkSoft} className="cs-filter-chevron" />
+  </div>
 
-  <select
-    value={riskFilter}
-    onChange={(e) => setRiskFilter(e.target.value)}
-    style={{
-      padding: "9px 12px",
-      borderRadius: 10,
-      border: `1px solid ${COLORS.line}`,
-      background: COLORS.cream,
-      color: COLORS.forest,
-      fontSize: 12,
-      cursor: "pointer",
-    }}
-  >
-    <option value="All">All Risk Levels</option>
-    <option value="High">High Risk</option>
-    <option value="Moderate">Moderate Risk</option>
-  </select>
+  <div className="cs-filter-wrap">
+    <select
+      value={riskFilter}
+      onChange={(e) => setRiskFilter(e.target.value)}
+      className="cs-filter-select"
+      style={{
+        padding: "9px 32px 9px 12px",
+        borderRadius: 10,
+        border: `1.5px solid ${riskFilter !== "All" ? COLORS.forest : COLORS.line}`,
+        background: riskFilter !== "All" ? "#EAF1E6" : COLORS.cream,
+        color: COLORS.forest,
+        fontSize: 12,
+        fontWeight: riskFilter !== "All" ? 700 : 500,
+        cursor: "pointer",
+      }}
+    >
+      <option value="All">All Risk Levels</option>
+      <option value="High">High Risk</option>
+      <option value="Moderate">Moderate Risk</option>
+    </select>
+    <ChevronDown size={14} color={COLORS.inkSoft} className="cs-filter-chevron" />
+  </div>
+
+  {(cropFilter !== "All" || diseaseFilter !== "All" || riskFilter !== "All") && (
+    <button
+      onClick={() => { setCropFilter("All"); setDiseaseFilter("All"); setRiskFilter("All"); }}
+      className="cs-clear-filters"
+      style={{
+        display: "flex", alignItems: "center", gap: 5,
+        padding: "8px 12px", borderRadius: 10, border: `1px solid ${COLORS.line}`,
+        background: "transparent", color: COLORS.inkSoft, fontSize: 12, fontWeight: 600,
+        cursor: "pointer",
+      }}
+    >
+      <X size={13} /> Clear filters
+    </button>
+  )}
 </div>
       <DiseaseHotspotMap
   location={location}
@@ -174,6 +238,7 @@ const [riskFilter, setRiskFilter] = useState("All");
         }}
       >
         <div
+          className="cs-stat-card"
           style={{
             background: COLORS.cream,
             border: `1px solid ${COLORS.line}`,
@@ -205,6 +270,7 @@ const [riskFilter, setRiskFilter] = useState("All");
         </div>
 
         <div
+          className="cs-stat-card"
           style={{
             background: COLORS.cream,
             border: `1px solid ${COLORS.line}`,
@@ -236,6 +302,7 @@ const [riskFilter, setRiskFilter] = useState("All");
         </div>
 
         <div
+          className="cs-stat-card"
           style={{
             background: COLORS.cream,
             border: `1px solid ${COLORS.line}`,

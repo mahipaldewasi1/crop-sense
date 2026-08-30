@@ -40,7 +40,7 @@ export default function Sidebar({ isOpen, onClose }) {
           box-shadow: 4px 0 20px rgba(0,0,0,0.15);
         }
         .cs-sidebar.open { transform: translateX(0); }
-        .cs-sidebar-close { display: none; }
+        
 
         .cs-nav-item {
           display: flex; align-items: center; gap: 12px; padding: 11px 14px;
@@ -52,14 +52,34 @@ export default function Sidebar({ isOpen, onClose }) {
         .cs-nav-item:hover { background: rgba(255,255,255,0.08); color: #fff; }
         .cs-nav-item.active { background: ${COLORS.amber}; color: ${COLORS.forestDeep}; }
 
+        .cs-sidebar-close {
+          transition: background-color 0.16s ease, transform 0.16s ease;
+          border-radius: 8px;
+        }
+        .cs-sidebar-close:hover { background: rgba(255,255,255,0.1); transform: rotate(90deg); }
+
+        .cs-lang-toggle {
+          transition: background-color 0.16s ease, color 0.16s ease, transform 0.16s ease;
+        }
+        .cs-lang-toggle:hover:not([aria-pressed="true"]) {
+          background: rgba(255,255,255,0.16) !important;
+          color: #fff !important;
+        }
+        .cs-lang-toggle:active { transform: scale(0.94); }
+
+        .cs-logout-item {
+          transition: background-color 0.16s ease, color 0.16s ease;
+        }
+        .cs-logout-item:hover { background: rgba(181,80,46,0.25) !important; color: #fff !important; }
+
         @media (min-width: 900px) {
           .cs-sidebar {
             position: sticky; top: 0; transform: translateX(0);
             box-shadow: none; flex-shrink: 0;
           }
           .cs-sidebar-overlay { display: none !important; }
-          .cs-sidebar-close { display: block !important; }
-        }
+          .cs-sidebar-close { display: none !important; }
+        } 
       `}</style>
 
       <div className={`cs-sidebar-overlay ${isOpen ? "show" : ""}`} onClick={onClose} />
@@ -102,7 +122,7 @@ export default function Sidebar({ isOpen, onClose }) {
 
         <div role="group" aria-label="Language" style={{ display: "flex", gap: 6, marginBottom: 12 }}>
           {LANGS.map((l) => (
-            <button key={l.code} onClick={() => changeLang(l.code)}
+            <button key={l.code} onClick={() => changeLang(l.code)} className="cs-lang-toggle"
               aria-pressed={lang === l.code} style={{
                 flex: 1, padding: "7px 4px", borderRadius: 8, border: "none", cursor: "pointer",
                 fontSize: 12.5, fontWeight: 700, fontFamily: "'Inter', sans-serif",
@@ -114,7 +134,7 @@ export default function Sidebar({ isOpen, onClose }) {
           ))}
         </div>
 
-        <button onClick={logout} className="cs-nav-item" style={{ background: "rgba(255,255,255,0.06)" }}>
+        <button onClick={logout} className="cs-nav-item cs-logout-item" style={{ background: "rgba(255,255,255,0.06)" }}>
           <LogOut size={18} /> {t("logout")}
         </button>
       </aside>
