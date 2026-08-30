@@ -274,6 +274,8 @@ export default function RiskMap({ location }) {
               background: COLORS.forest,
               border: "2px solid white",
               boxSizing: "border-box",
+              position: "relative",
+isolation: "isolate",
             }}
           />
 

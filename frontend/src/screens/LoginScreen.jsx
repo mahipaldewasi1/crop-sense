@@ -102,11 +102,25 @@ export default function LoginScreen() {
       alignItems: "center", justifyContent: "center",
       background: COLORS.bg, padding: "24px 16px", fontFamily: "'Inter', sans-serif",
     }}>
-      <div style={{ width: "100%", maxWidth: 420 }}>
+      <style>{`
+        .cs-input-row { transition: border-color 0.16s ease, box-shadow 0.16s ease; }
+        .cs-input-row:focus-within {
+          border-color: ${COLORS.forest} !important;
+          box-shadow: 0 0 0 3px rgba(31,58,46,0.12);
+        }
+        .cs-lang-btn:hover { border-color: ${COLORS.forest}; }
+        .cs-tab-btn:hover:not([data-active="true"]) { color: ${COLORS.forest}; }
+        .cs-location-btn:hover { filter: brightness(0.97); }
+        .cs-plain-input:focus {
+          border-color: ${COLORS.forest} !important;
+          box-shadow: 0 0 0 3px rgba(31,58,46,0.12);
+        }
+      `}</style>
+      <div style={{ width: "100%", maxWidth: 420 }} className="cs-animate-in">
 
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 6, marginBottom: 18 }}>
           {LANGS.map((l) => (
-            <button key={l.code} onClick={() => changeLang(l.code)} style={{
+            <button key={l.code} onClick={() => changeLang(l.code)} className="cs-lang-btn" style={{
               padding: "5px 12px", borderRadius: 20, border: `1px solid ${COLORS.line}`, cursor: "pointer",
               fontSize: 12, fontWeight: 600,
               background: lang === l.code ? COLORS.forest : COLORS.cream,
@@ -133,7 +147,7 @@ export default function LoginScreen() {
 
           <div style={{ display: "flex", background: "#EAE7D9", borderRadius: 12, padding: 4, marginBottom: 20 }}>
             {["login", "register"].map((m) => (
-              <button key={m} type="button" onClick={() => { setMode(m); setError(""); }} style={{
+              <button key={m} type="button" data-active={mode === m} className="cs-tab-btn" onClick={() => { setMode(m); setError(""); }} style={{
                 flex: 1, padding: "9px 0", borderRadius: 9, border: "none", cursor: "pointer",
                 background: mode === m ? COLORS.cream : "transparent",
                 color: mode === m ? COLORS.forest : COLORS.inkSoft,
@@ -149,18 +163,18 @@ export default function LoginScreen() {
             {mode === "register" && (
               <>
                 <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.inkSoft, marginBottom: 6 }}>{t("name")}</label>
-                <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Full Name" style={inputStyle} />
+                <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Full Name" className="cs-plain-input" style={inputStyle} />
               </>
             )}
 
             <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.inkSoft, marginBottom: 6 }}>{t("mobileNumber")}</label>
-            <div style={inputRow}>
+            <div className="cs-input-row" style={inputRow}>
               <User size={16} color={COLORS.inkSoft} />
               <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Mobile Number" style={inputBare} />
             </div>
 
             <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.inkSoft, marginBottom: 6 }}>{t("password")}</label>
-            <div style={{ ...inputRow, marginBottom: 16 }}>
+            <div className="cs-input-row" style={{ ...inputRow, marginBottom: 16 }}>
               <Lock size={16} color={COLORS.inkSoft} />
               <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" style={inputBare} />
             </div>
@@ -172,7 +186,7 @@ export default function LoginScreen() {
             </PrimaryButton>
           </form>
 
-          <button onClick={detectLocation} type="button" style={{
+          <button onClick={detectLocation} type="button" className="cs-location-btn" style={{
             marginTop: 20, display: "flex", alignItems: "center", gap: 8, cursor: "pointer",
             padding: "12px 14px", background: location ? "#E4EEDF" : "#EFEDE0", borderRadius: 12,
             border: "none", textAlign: "left", width: "100%",

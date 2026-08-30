@@ -62,7 +62,7 @@ export default function ScanScreen() {
   }
 
   return (
-    <div style={{ maxWidth: 640, margin: "0 auto", padding: "0 20px 40px" }}>
+    <div className="cs-animate-in" style={{ maxWidth: 640, margin: "0 auto", padding: "0 20px 40px" }}>
       <TopBar title={t("scan")} onBack={() => navigate("/home")} />
 
       {/* Crop selector — chip toggle, matching the login/register tab pattern already used in LoginScreen */}

@@ -15,7 +15,10 @@ export default function Layout({ children }) {
           width: 40px; height: 40px; border-radius: 10px;
           background: ${COLORS.cream}; border: 1px solid ${COLORS.line};
           margin: 14px 0 0 16px; cursor: pointer;
+          transition: border-color 0.16s ease, transform 0.16s ease;
         }
+        .cs-hamburger:hover { border-color: ${COLORS.forest}; transform: scale(1.05); }
+        .cs-hamburger:active { transform: scale(0.95); }
         @media (min-width: 900px) {
           .cs-hamburger { display: none; }
         }

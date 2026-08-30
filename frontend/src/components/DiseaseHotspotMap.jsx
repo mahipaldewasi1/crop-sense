@@ -22,6 +22,8 @@ export default function DiseaseHotspotMap({
         overflow: "hidden",
         border: "1px solid #D9DFD0",
         marginBottom: 24,
+        position: "relative",
+isolation: "isolate",
       }}
     >
       <MapContainer

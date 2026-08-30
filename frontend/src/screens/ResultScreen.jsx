@@ -170,7 +170,7 @@ export default function ResultScreen() {
         }
       `}</style>
 
-      <div style={{ maxWidth: 900, margin: "0 auto", padding: "0 20px 40px" }}>
+      <div className="cs-animate-in" style={{ maxWidth: 900, margin: "0 auto", padding: "0 20px 40px" }}>
         <TopBar title={t("result")} onBack={() => navigate("/scan")} />
 
         <div className="cs-result-grid">
