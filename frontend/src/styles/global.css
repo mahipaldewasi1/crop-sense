@@ -1,0 +1,30 @@
+/* Global reset + default typography.
+   This is what was missing: without a font-family on `body`,
+   any element that doesn't set one inline falls back to the
+   browser's default serif — which is why plain <p> text was
+   rendering serif everywhere despite Inter being loaded. */
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Form elements don't inherit the body font by default in most
+   browsers — buttons/selects can silently fall back to serif too. */
+button, input, select, textarea {
+  font-family: inherit;
+}
+
+a {
+  color: inherit;
+}
