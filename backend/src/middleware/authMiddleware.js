@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 
-// Protected routes ke liye - header mein "Authorization: Bearer <token>" chahiye
+
 function protect(req, res, next) {
   const authHeader = req.headers.authorization;
 

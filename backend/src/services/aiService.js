@@ -1,21 +1,14 @@
-/**
- * aiService.js
- * ------------
- * Har disease profile ab teeno languages mein hai (en/hi/mr), plus ek
- * fixed `classKey` jo language-neutral hai. detectDiseaseClass() sirf
- * classKey deta hai; translateProfile(classKey, lang) usi se translated
- * result banata hai — isliye ek hi scan ko baad mein kisi bhi language
- * mein dobara translate kiya ja sakta hai, chahe wo kab save hua ho.
- * Jab real AI model aayega, sirf FUTURE section wala hissa badlega — ye
- * translation TABLE reuse hogi, kyunki disease classes fixed/finite hoti
- * hain (model training ke time hi decide ho jaati hain).
- */
+
 
 const DISEASE_PROFILES = [
   {
     classKey: "Tomato_Early_Blight",
     crop: { en: "Tomato", hi: "टमाटर", mr: "टोमॅटो" },
-    disease: { en: "Early Blight", hi: "अगेती झुलसा", mr: "लवकर करपा" },
+    disease: {
+      en: "Early Blight",
+      hi: "अगेती झुलसा",
+      mr: "लवकर करपा",
+    },
     severity: "Medium",
     severityPercent: 62,
     confidence: 91,
@@ -25,19 +18,25 @@ const DISEASE_PROFILES = [
       mr: "7 दिवसांच्या आत कॉपर-आधारित बुरशीनाशक फवारणी करा. प्रभावित पाने काढून टाका आणि जास्त पाणी देणे टाळा.",
     },
   },
+
   {
     classKey: "Tomato_Leaf_Curl_Virus",
     crop: { en: "Tomato", hi: "टमाटर", mr: "टोमॅटो" },
-    disease: { en: "Leaf Curl Virus", hi: "पत्ती मरोड़ वायरस", mr: "पान कुरळी विषाणू" },
+    disease: {
+      en: "Leaf Curl Virus",
+      hi: "पत्ती मरोड़ वायरस",
+      mr: "पान कुरळी विषाणू",
+    },
     severity: "High",
     severityPercent: 84,
     confidence: 88,
     recommendation: {
       en: "Isolate affected plants immediately, spray neem oil to control whitefly. Contact your local Krishi Vigyan Kendra for severe cases.",
       hi: "प्रभावित पौधों को तुरंत अलग करें, सफेद मक्खी नियंत्रण के लिए नीम तेल स्प्रे करें। गंभीर मामलों में कृषि विज्ञान केंद्र से संपर्क करें।",
-      mr: "प्रभावित रोपे लगेच वेगळी करा, पांढरी माशी नियंत्रणासाठी निंबोळी तेल फवारणी करा. गंभीर प्रकरणांमध्ये कृषी विज्ञान केंद्राशी संपर्क साधा.",
+      mr: "प्रभावित रोपे लगेच वेगळी करा, पांढरी माशी नियंत्रणासाठी निंबोळी तेल फवारणी करा. गंभीर प्रकरणांमध्ये कृषि विज्ञान केंद्राशी संपर्क साधा.",
     },
   },
+
   {
     classKey: "Wheat_Healthy",
     crop: { en: "Wheat", hi: "गेहूं", mr: "गहू" },
@@ -51,6 +50,7 @@ const DISEASE_PROFILES = [
       mr: "पीक निरोगी आहे. नियमित निरीक्षण सुरू ठेवा आणि संतुलित खत वेळापत्रक पाळा.",
     },
   },
+
   {
     classKey: "Potato_Late_Blight",
     crop: { en: "Potato", hi: "आलू", mr: "बटाटा" },
@@ -59,11 +59,14 @@ const DISEASE_PROFILES = [
     severityPercent: 78,
     confidence: 89,
     recommendation: {
-      en: "Spray Mancozeb or Chlorothalonil based fungicide immediately. Prevent water from stagnating in the field.",
-      hi: "मैंकोज़ेब या क्लोरोथैलोनिल आधारित फफूंदनाशक तुरंत स्प्रे करें। खेत में पानी जमा न होने दें।",
-      mr: "मॅन्कोझेब किंवा क्लोरोथॅलोनिल आधारित बुरशीनाशक लगेच फवारणी करा. शेतात पाणी साचू देऊ नका.",
-    },
+  en: "Follow the IPM recommendations below, monitor disease spread closely, and use only locally approved treatment options when intervention is justified.",
+
+  hi: "नीचे दी गई IPM सलाह का पालन करें, रोग के फैलाव की नियमित निगरानी करें और उपचार आवश्यक होने पर केवल स्थानीय रूप से स्वीकृत विकल्पों का उपयोग करें।",
+
+  mr: "खालील IPM शिफारसींचे पालन करा, रोगाचा प्रसार नियमितपणे तपासा आणि उपचाराची गरज असल्यास केवळ स्थानिक मान्य पर्यायांचा वापर करा.",
+},
   },
+
   {
     classKey: "Cotton_Bacterial_Blight",
     crop: { en: "Cotton", hi: "कपास", mr: "कापूस" },
@@ -77,60 +80,625 @@ const DISEASE_PROFILES = [
       mr: "कॉपर ऑक्सिक्लोराईड फवारणी करा. पुढील पेरणीसाठी रोगप्रतिकारक बियाणे वाण निवडा.",
     },
   },
-];
+  {
+  classKey: "Potato_Early_Blight",
 
-/**
- * detectDiseaseClass()
- * --------------------
- * Sirf ek language-neutral classKey lautata hai (jaise "Tomato_Early_Blight").
- * Isi classKey ko DB mein store karna hai — koi translated text nahi.
- * Yahi wo cheez hai jo "purana scan history language switch pe translate
- * nahi hota" bug ko fix karti hai: agar translated string save kar denge,
- * to future mein language badalne par usse wapas translate nahi kar sakte.
- * classKey fixed rehta hai, aur translation hamesha isi se dobara nikalte hain.
+  crop: {
+    en: "Potato",
+    hi: "आलू",
+    mr: "बटाटा",
+  },
+
+  disease: {
+    en: "Early Blight",
+    hi: "अगेती झुलसा",
+    mr: "लवकर करपा",
+  },
+
+  severity: "Medium",
+  severityPercent: 58,
+  confidence: 89,
+
+  recommendation: {
+    en: "Remove severely affected leaves, avoid overhead irrigation, and maintain good field sanitation. Follow locally approved disease-management guidance if treatment is required.",
+
+    hi: "बहुत अधिक प्रभावित पत्तियों को हटाएं, ऊपर से पानी देने से बचें और खेत की स्वच्छता बनाए रखें। आवश्यकता होने पर स्थानीय रूप से स्वीकृत रोग-प्रबंधन सलाह का पालन करें।",
+
+    mr: "जास्त बाधित पाने काढून टाका, पानांवरून पाणी देणे टाळा आणि शेताची स्वच्छता राखा. उपचाराची गरज असल्यास स्थानिक मान्य रोग व्यवस्थापन सल्ल्याचे पालन करा.",
+  },
+},
+
+{
+  classKey: "Potato_Healthy",
+
+  crop: {
+    en: "Potato",
+    hi: "आलू",
+    mr: "बटाटा",
+  },
+
+  disease: {
+    en: "Healthy",
+    hi: "स्वस्थ",
+    mr: "निरोगी",
+  },
+
+  severity: "Low",
+  severityPercent: 8,
+  confidence: 95,
+
+  recommendation: {
+    en: "No major disease signs detected. Continue regular scouting, maintain field sanitation, and monitor the crop regularly.",
+
+    hi: "रोग के कोई प्रमुख लक्षण नहीं पाए गए। नियमित निरीक्षण जारी रखें, खेत की स्वच्छता बनाए रखें और फसल की निगरानी करते रहें।",
+
+    mr: "रोगाची ठळक लक्षणे आढळली नाहीत. नियमित पाहणी सुरू ठेवा, शेताची स्वच्छता राखा आणि पिकाचे नियमित निरीक्षण करा.",
+  },
+},
+];
+const IPM_PROFILES = {
+  Tomato_Early_Blight: {
+    en: {
+      monitoring: [
+        "Scout lower leaves regularly for dark spots and yellowing.",
+        "Pay closer attention after warm, humid or wet weather."
+      ],
+      cultural: [
+        "Remove severely affected leaves where practical.",
+        "Avoid prolonged leaf wetness and keep the field well ventilated.",
+        "Maintain good field sanitation."
+      ],
+      biological: [
+        "Prefer locally recommended biological disease-management options where available."
+      ],
+      chemical: [
+        "Use a fungicide only when disease pressure justifies treatment and choose a locally approved product for the crop and disease."
+      ],
+      safety: [
+        "Follow the product label, approved dose, waiting period and required protective equipment."
+      ]
+    },
+
+    hi: {
+      monitoring: [
+        "निचली पत्तियों पर नियमित रूप से काले धब्बे और पीलापन देखें।",
+        "गर्म, नम या बारिश वाले मौसम के बाद विशेष निगरानी करें।"
+      ],
+      cultural: [
+        "जहां संभव हो, अधिक प्रभावित पत्तियों को हटाएं।",
+        "पत्तियों के लंबे समय तक गीले रहने से बचें और खेत में अच्छा वेंटिलेशन रखें।",
+        "खेत की स्वच्छता बनाए रखें।"
+      ],
+      biological: [
+        "जहां उपलब्ध हो, स्थानीय रूप से अनुशंसित जैविक रोग प्रबंधन विकल्पों को प्राथमिकता दें।"
+      ],
+      chemical: [
+        "उपचार की आवश्यकता होने पर ही फफूंदनाशक का उपयोग करें और फसल व रोग के लिए स्थानीय रूप से स्वीकृत उत्पाद चुनें।"
+      ],
+      safety: [
+        "लेबल, स्वीकृत मात्रा, प्रतीक्षा अवधि और आवश्यक सुरक्षा उपकरणों का पालन करें।"
+      ]
+    },
+
+    mr: {
+      monitoring: [
+        "खालच्या पानांवर काळे डाग आणि पिवळेपणा नियमितपणे तपासा.",
+        "उष्ण, दमट किंवा पावसाळी हवामानानंतर अधिक काळजीपूर्वक पाहणी करा."
+      ],
+      cultural: [
+        "शक्य असल्यास जास्त बाधित पाने काढून टाका.",
+        "पानांवर दीर्घकाळ ओलावा राहू देऊ नका आणि शेतात चांगले वायुवीजन ठेवा.",
+        "शेताची स्वच्छता राखा."
+      ],
+      biological: [
+        "उपलब्ध असल्यास स्थानिक शिफारसीनुसार जैविक रोग व्यवस्थापन पर्यायांना प्राधान्य द्या."
+      ],
+      chemical: [
+        "उपचाराची गरज असल्यासच बुरशीनाशक वापरा आणि पिकासाठी व रोगासाठी स्थानिक मान्य उत्पादन निवडा."
+      ],
+      safety: [
+        "लेबल, मान्य मात्रा, प्रतीक्षा कालावधी आणि आवश्यक सुरक्षा साधनांचे पालन करा."
+      ]
+    }
+  },
+
+  Potato_Late_Blight: {
+    en: {
+      monitoring: [
+        "Inspect leaves and stems frequently for dark lesions and rapid disease spread.",
+        "Increase scouting after rainy, cool or humid conditions."
+      ],
+      cultural: [
+        "Remove badly affected plant material where practical.",
+        "Reduce prolonged leaf wetness and maintain field sanitation.",
+        "Avoid unnecessary irrigation during wet conditions."
+      ],
+      biological: [
+        "Use locally recommended biological or preventive disease-management options where suitable."
+      ],
+      chemical: [
+        "When treatment is justified, use only a locally approved fungicide strategy appropriate for potato late blight."
+      ],
+      safety: [
+        "Follow the product label, approved dose, pre-harvest interval and protective-equipment requirements."
+      ]
+    },
+
+    hi: {
+      monitoring: [
+        "पत्तियों और तनों पर गहरे धब्बों तथा तेजी से फैलते रोग के लक्षणों की नियमित जांच करें।",
+        "बारिश, ठंडे या नम मौसम के बाद अधिक निगरानी करें।"
+      ],
+      cultural: [
+        "जहां संभव हो, बहुत अधिक प्रभावित पौधों के हिस्से हटा दें।",
+        "पत्तियों के लंबे समय तक गीले रहने को कम करें और खेत की स्वच्छता बनाए रखें।",
+        "गीली परिस्थितियों में अनावश्यक सिंचाई से बचें।"
+      ],
+      biological: [
+        "जहां उपयुक्त हो, स्थानीय रूप से अनुशंसित जैविक या निवारक रोग-प्रबंधन विकल्पों का उपयोग करें।"
+      ],
+      chemical: [
+        "जब उपचार आवश्यक हो, तभी आलू के पछेती झुलसा के लिए स्थानीय रूप से स्वीकृत फफूंदनाशक रणनीति अपनाएं।"
+      ],
+      safety: [
+        "लेबल, स्वीकृत मात्रा, कटाई से पहले की प्रतीक्षा अवधि और सुरक्षा उपकरणों की आवश्यकताओं का पालन करें।"
+      ]
+    },
+
+    mr: {
+      monitoring: [
+        "पाने आणि खोडांवर काळे डाग व रोगाचा जलद प्रसार यासाठी नियमित पाहणी करा.",
+        "पाऊस, थंड किंवा दमट हवामानानंतर अधिक काळजीपूर्वक पाहणी करा."
+      ],
+      cultural: [
+        "शक्य असल्यास जास्त बाधित वनस्पती भाग काढून टाका.",
+        "पाने जास्त वेळ ओलसर राहू देऊ नका आणि शेताची स्वच्छता राखा.",
+        "ओलसर परिस्थितीत अनावश्यक सिंचन टाळा."
+      ],
+      biological: [
+        "योग्य असल्यास स्थानिक शिफारसीनुसार जैविक किंवा प्रतिबंधात्मक रोग व्यवस्थापन पर्याय वापरा."
+      ],
+      chemical: [
+        "उपचार आवश्यक असल्यासच बटाट्याच्या उशिरा करप्यासाठी स्थानिक मान्य बुरशीनाशक व्यवस्थापन पद्धत वापरा."
+      ],
+      safety: [
+        "लेबल, मान्य मात्रा, काढणीपूर्व प्रतीक्षा कालावधी आणि आवश्यक सुरक्षा साधनांचे पालन करा."
+      ]
+    }
+  },
+
+  Tomato_Leaf_Curl_Virus: {
+    en: {
+      monitoring: [
+        "Scout young leaves regularly for curling, yellowing and stunted growth.",
+        "Check plants for whitefly activity."
+      ],
+      cultural: [
+        "Remove severely affected plants where practical to reduce spread.",
+        "Keep the field free from weeds that can support insect populations.",
+        "Use healthy planting material."
+      ],
+      biological: [
+        "Prefer locally recommended biological whitefly-management options where available."
+      ],
+      chemical: [
+        "Use insect-control products only when justified and only those locally approved for the crop and target pest."
+      ],
+      safety: [
+        "Follow the label, approved dose, re-entry requirements and protective-equipment instructions."
+      ]
+    },
+
+    hi: {
+      monitoring: [
+        "नई पत्तियों में मरोड़, पीलापन और कमजोर वृद्धि की नियमित जांच करें।",
+        "पौधों पर सफेद मक्खी की गतिविधि देखें।"
+      ],
+      cultural: [
+        "जहां संभव हो, गंभीर रूप से प्रभावित पौधों को हटा दें।",
+        "ऐसी खरपतवारों को नियंत्रित रखें जो कीटों को आश्रय दे सकती हैं।",
+        "स्वस्थ रोपण सामग्री का उपयोग करें।"
+      ],
+      biological: [
+        "जहां उपलब्ध हो, सफेद मक्खी नियंत्रण के स्थानीय अनुशंसित जैविक विकल्पों को प्राथमिकता दें।"
+      ],
+      chemical: [
+        "कीट नियंत्रण उत्पाद का उपयोग तभी करें जब आवश्यक हो और फसल तथा लक्षित कीट के लिए स्थानीय रूप से स्वीकृत उत्पाद ही चुनें।"
+      ],
+      safety: [
+        "लेबल, स्वीकृत मात्रा, पुनःप्रवेश अवधि और सुरक्षा उपकरण संबंधी निर्देशों का पालन करें।"
+      ]
+    },
+
+    mr: {
+      monitoring: [
+        "नवीन पानांमध्ये कुरळेपणा, पिवळेपणा आणि खुंटलेली वाढ यासाठी नियमित पाहणी करा.",
+        "पांढऱ्या माशीची हालचाल तपासा."
+      ],
+      cultural: [
+        "शक्य असल्यास जास्त बाधित झाडे काढून टाका.",
+        "कीटकांना आश्रय देणाऱ्या तणांचे नियंत्रण ठेवा.",
+        "निरोगी लागवड साहित्य वापरा."
+      ],
+      biological: [
+        "उपलब्ध असल्यास पांढऱ्या माशीच्या नियंत्रणासाठी स्थानिक शिफारसीनुसार जैविक पर्यायांना प्राधान्य द्या."
+      ],
+      chemical: [
+        "कीटक नियंत्रणासाठी उपचाराची गरज असल्यासच स्थानिक मान्य आणि लक्ष्यित कीटकासाठी योग्य उत्पादन वापरा."
+      ],
+      safety: [
+        "लेबल, मान्य मात्रा, पुन्हा प्रवेश कालावधी आणि सुरक्षा साधनांच्या सूचनांचे पालन करा."
+      ]
+    }
+  },
+    Potato_Early_Blight: {
+    en: {
+      monitoring: [
+        "Inspect lower and older leaves regularly for dark brown spots and yellowing.",
+        "Increase scouting during warm, humid or wet weather."
+      ],
+      cultural: [
+        "Remove severely affected leaves where practical.",
+        "Maintain good field sanitation and remove crop debris.",
+        "Avoid prolonged leaf wetness and unnecessary overhead irrigation."
+      ],
+      biological: [
+        "Prefer locally recommended biological disease-management options where available."
+      ],
+      chemical: [
+        "When treatment is justified, use only a locally approved fungicide strategy appropriate for potato early blight."
+      ],
+      safety: [
+        "Follow the product label, approved dose, pre-harvest interval and required protective equipment."
+      ]
+    },
+
+    hi: {
+      monitoring: [
+        "पुरानी और निचली पत्तियों पर गहरे भूरे धब्बों और पीलापन की नियमित जांच करें।",
+        "गर्म, नम या बारिश वाले मौसम में अधिक निगरानी करें।"
+      ],
+      cultural: [
+        "जहां संभव हो, अधिक प्रभावित पत्तियों को हटा दें।",
+        "खेत की स्वच्छता बनाए रखें और फसल के अवशेष हटाएं।",
+        "पत्तियों के लंबे समय तक गीले रहने और अनावश्यक ऊपर से सिंचाई से बचें।"
+      ],
+      biological: [
+        "जहां उपलब्ध हो, स्थानीय रूप से अनुशंसित जैविक रोग-प्रबंधन विकल्पों को प्राथमिकता दें।"
+      ],
+      chemical: [
+        "जब उपचार आवश्यक हो, तभी आलू के अगेती झुलसा के लिए स्थानीय रूप से स्वीकृत फफूंदनाशक रणनीति अपनाएं।"
+      ],
+      safety: [
+        "लेबल, स्वीकृत मात्रा, कटाई से पहले की प्रतीक्षा अवधि और आवश्यक सुरक्षा उपकरणों का पालन करें।"
+      ]
+    },
+
+    mr: {
+      monitoring: [
+        "जुन्या आणि खालच्या पानांवर काळसर तपकिरी डाग व पिवळेपणा यासाठी नियमित पाहणी करा.",
+        "उष्ण, दमट किंवा पावसाळी हवामानात अधिक काळजीपूर्वक पाहणी करा."
+      ],
+      cultural: [
+        "शक्य असल्यास जास्त बाधित पाने काढून टाका.",
+        "शेताची स्वच्छता राखा आणि पिकांचे अवशेष काढून टाका.",
+        "पाने जास्त वेळ ओलसर राहणे आणि अनावश्यक वरून सिंचन करणे टाळा."
+      ],
+      biological: [
+        "उपलब्ध असल्यास स्थानिक शिफारसीनुसार जैविक रोग व्यवस्थापन पर्यायांना प्राधान्य द्या."
+      ],
+      chemical: [
+        "उपचार आवश्यक असल्यासच बटाट्याच्या लवकर करप्यासाठी स्थानिक मान्य बुरशीनाशक व्यवस्थापन पद्धत वापरा."
+      ],
+      safety: [
+        "लेबल, मान्य मात्रा, काढणीपूर्व प्रतीक्षा कालावधी आणि आवश्यक सुरक्षा साधनांचे पालन करा."
+      ]
+    }
+  },
+
+  Potato_Healthy: {
+    en: {
+      monitoring: [
+        "Continue regular scouting for leaf spots, discoloration, wilting or unusual plant growth.",
+        "Monitor the crop more closely after prolonged wet or stressful weather."
+      ],
+      cultural: [
+        "Maintain good field sanitation.",
+        "Use healthy planting material and maintain appropriate irrigation.",
+        "Remove unusual or severely damaged plant material where practical."
+      ],
+      biological: [],
+      chemical: [],
+      safety: [
+        "Do not apply disease-control products unless a disease or pest problem is identified and treatment is justified."
+      ]
+    },
+
+    hi: {
+      monitoring: [
+        "पत्तियों पर धब्बे, रंग में बदलाव, मुरझाना या असामान्य वृद्धि के लिए नियमित निरीक्षण जारी रखें।",
+        "लंबे समय तक गीले या तनावपूर्ण मौसम के बाद फसल की अधिक निगरानी करें।"
+      ],
+      cultural: [
+        "खेत की स्वच्छता बनाए रखें।",
+        "स्वस्थ रोपण सामग्री का उपयोग करें और उचित सिंचाई बनाए रखें।",
+        "जहां संभव हो, असामान्य या गंभीर रूप से क्षतिग्रस्त पौधों के हिस्सों को हटा दें।"
+      ],
+      biological: [],
+      chemical: [],
+      safety: [
+        "जब तक किसी रोग या कीट की पहचान न हो और उपचार आवश्यक न हो, रोग-नियंत्रण उत्पादों का उपयोग न करें।"
+      ]
+    },
+
+    mr: {
+      monitoring: [
+        "पानांवरील डाग, रंगातील बदल, कोमेजणे किंवा असामान्य वाढ यासाठी नियमित पाहणी सुरू ठेवा.",
+        "दीर्घकाळ ओलसर किंवा प्रतिकूल हवामानानंतर पिकाची अधिक काळजीपूर्वक पाहणी करा."
+      ],
+      cultural: [
+        "शेताची स्वच्छता राखा.",
+        "निरोगी लागवड साहित्य वापरा आणि योग्य सिंचन ठेवा.",
+        "शक्य असल्यास असामान्य किंवा जास्त नुकसान झालेल्या वनस्पतींचे भाग काढून टाका."
+      ],
+      biological: [],
+      chemical: [],
+      safety: [
+        "रोग किंवा कीड ओळखली गेली नसेल आणि उपचाराची गरज नसेल तर रोगनियंत्रणासाठी उत्पादने वापरू नका."
+      ]
+    }
+  },
+
+  Wheat_Healthy: {
+    en: {
+      monitoring: [
+        "Inspect the crop regularly for leaf spots, rust symptoms, discoloration and unusual growth.",
+        "Increase scouting when weather conditions become favorable for disease development."
+      ],
+      cultural: [
+        "Maintain good field sanitation.",
+        "Use healthy seed and follow appropriate crop-management practices.",
+        "Avoid unnecessary irrigation that keeps foliage wet for long periods."
+      ],
+      biological: [],
+      chemical: [],
+      safety: [
+        "Use crop-protection products only when a problem is identified and treatment is justified."
+      ]
+    },
+
+    hi: {
+      monitoring: [
+        "पत्तियों पर धब्बे, रतुआ के लक्षण, रंग में बदलाव और असामान्य वृद्धि की नियमित जांच करें।",
+        "रोग के लिए अनुकूल मौसम होने पर अधिक निगरानी करें।"
+      ],
+      cultural: [
+        "खेत की स्वच्छता बनाए रखें।",
+        "स्वस्थ बीज का उपयोग करें और उचित फसल प्रबंधन अपनाएं।",
+        "ऐसी अनावश्यक सिंचाई से बचें जिससे पत्तियां लंबे समय तक गीली रहें।"
+      ],
+      biological: [],
+      chemical: [],
+      safety: [
+        "फसल-सुरक्षा उत्पादों का उपयोग तभी करें जब समस्या की पहचान हो और उपचार आवश्यक हो।"
+      ]
+    },
+
+    mr: {
+      monitoring: [
+        "पानांवरील डाग, तांबेरा रोगाची लक्षणे, रंगातील बदल आणि असामान्य वाढ यासाठी नियमित पाहणी करा.",
+        "रोगासाठी अनुकूल हवामान असल्यास अधिक काळजीपूर्वक पाहणी करा."
+      ],
+      cultural: [
+        "शेताची स्वच्छता राखा.",
+        "निरोगी बियाणे वापरा आणि योग्य पीक व्यवस्थापन पद्धती पाळा.",
+        "पाने जास्त वेळ ओलसर ठेवणारे अनावश्यक सिंचन टाळा."
+      ],
+      biological: [],
+      chemical: [],
+      safety: [
+        "समस्या ओळखली गेली असेल आणि उपचाराची गरज असेल तेव्हाच पीक संरक्षण उत्पादने वापरा."
+      ]
+    }
+  },
+
+  Cotton_Bacterial_Blight: {
+    en: {
+      monitoring: [
+        "Inspect leaves regularly for water-soaked spots, dark lesions and spreading symptoms.",
+        "Increase scouting after rainy, warm or humid conditions."
+      ],
+      cultural: [
+        "Remove severely affected plant material where practical.",
+        "Maintain good field sanitation and manage crop residues appropriately.",
+        "Avoid unnecessary irrigation and prolonged leaf wetness."
+      ],
+      biological: [
+        "Prefer locally recommended biological or preventive disease-management options where available."
+      ],
+      chemical: [
+        "When treatment is justified, use only a locally approved disease-management product appropriate for cotton."
+      ],
+      safety: [
+        "Follow the product label, approved dose, waiting period and required protective equipment."
+      ]
+    },
+
+    hi: {
+      monitoring: [
+        "पत्तियों पर पानी जैसे धब्बे, गहरे घाव और फैलते हुए लक्षणों की नियमित जांच करें।",
+        "बारिश, गर्म या नम मौसम के बाद अधिक निगरानी करें।"
+      ],
+      cultural: [
+        "जहां संभव हो, गंभीर रूप से प्रभावित पौधों के हिस्सों को हटा दें।",
+        "खेत की स्वच्छता बनाए रखें और फसल अवशेषों का उचित प्रबंधन करें।",
+        "अनावश्यक सिंचाई और पत्तियों के लंबे समय तक गीले रहने से बचें।"
+      ],
+      biological: [
+        "जहां उपलब्ध हो, स्थानीय रूप से अनुशंसित जैविक या निवारक रोग-प्रबंधन विकल्पों को प्राथमिकता दें।"
+      ],
+      chemical: [
+        "जब उपचार आवश्यक हो, तभी कपास के लिए स्थानीय रूप से स्वीकृत और रोग के लिए उपयुक्त उत्पाद का उपयोग करें।"
+      ],
+      safety: [
+        "लेबल, स्वीकृत मात्रा, प्रतीक्षा अवधि और आवश्यक सुरक्षा उपकरणों का पालन करें।"
+      ]
+    },
+
+    mr: {
+      monitoring: [
+        "पानांवर पाण्यासारखे डाग, काळे घाव आणि रोगाचा प्रसार यासाठी नियमित पाहणी करा.",
+        "पाऊस, उष्ण किंवा दमट हवामानानंतर अधिक काळजीपूर्वक पाहणी करा."
+      ],
+      cultural: [
+        "शक्य असल्यास जास्त बाधित वनस्पतींचे भाग काढून टाका.",
+        "शेताची स्वच्छता राखा आणि पिकांच्या अवशेषांचे योग्य व्यवस्थापन करा.",
+        "अनावश्यक सिंचन आणि पाने जास्त वेळ ओलसर राहणे टाळा."
+      ],
+      biological: [
+        "उपलब्ध असल्यास स्थानिक शिफारसीनुसार जैविक किंवा प्रतिबंधात्मक रोग व्यवस्थापन पर्यायांना प्राधान्य द्या."
+      ],
+      chemical: [
+        "उपचार आवश्यक असल्यासच कापसासाठी स्थानिक मान्य आणि रोगासाठी योग्य उत्पादन वापरा."
+      ],
+      safety: [
+        "लेबल, मान्य मात्रा, प्रतीक्षा कालावधी आणि आवश्यक सुरक्षा साधनांचे पालन करा."
+      ]
+    }
+  },
+};
+
+
+/*
+ * The ML model uses PlantVillage-style labels.
+ * Our application uses its own classKey names.
+ *
+ * So we translate the model's label into the key
+ * that our existing recommendation/translation system understands.
  */
-function detectDiseaseClass(imageBuffer) {
-  const seed = imageBuffer && imageBuffer.length ? imageBuffer.length : Date.now();
-  const index = seed % DISEASE_PROFILES.length;
-  return DISEASE_PROFILES[index].classKey;
+const MODEL_LABEL_MAP = {
+  "Tomato___Early_blight": "Tomato_Early_Blight",
+  "Tomato___Tomato_Yellow_Leaf_Curl_Virus": "Tomato_Leaf_Curl_Virus",
+
+  "Potato___Early_blight": "Potato_Early_Blight",
+  "Potato___Late_blight": "Potato_Late_Blight",
+  "Potato___healthy": "Potato_Healthy",
+};
+
+
+/*
+ * REAL ML DETECTION
+ *
+ * Camera image
+ *     ↓
+ * Hugging Face
+ *     ↓
+ * ResNet50
+ *     ↓
+ * model label + confidence
+ */
+async function detectDiseaseClass(
+  imageBuffer,
+  contentType = "image/jpeg",
+  crop = "tomato"
+) {
+  if (!imageBuffer || !imageBuffer.length) {
+    throw new Error("No image provided");
+  }
+
+  const aiServiceUrl = process.env.AI_SERVICE_URL;
+
+  if (!aiServiceUrl) {
+    throw new Error("AI_SERVICE_URL is missing from backend .env");
+  }
+
+  const form = new FormData();
+
+  form.append(
+    "file",
+    new Blob([imageBuffer], { type: contentType }),
+    "crop-image.jpg"
+  );
+
+  form.append("crop", crop);
+
+  const response = await fetch(aiServiceUrl, {
+    method: "POST",
+    body: form,
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      data.detail ||
+      data.message ||
+      "ML service prediction failed"
+    );
+  }
+
+  if (!data.disease) {
+    throw new Error("ML service returned no disease");
+  }
+
+  return {
+    classKey: MODEL_LABEL_MAP[data.disease] || null,
+    modelLabel: data.disease,
+    confidence: data.confidence,
+    crop: data.crop,
+    topPredictions: data.top_predictions || [],
+  };
 }
 
-/**
- * translateProfile(classKey, lang)
- * ---------------------------------
- * classKey se profile dhoondh kar requested language mein translate karke
- * deta hai. Isko scan create karte waqt bhi bula sakte hain (turant result
- * dikhane ke liye), aur history fetch karte waqt bhi (jab user ne language
- * switch kar li ho) — kyunki dono baar classKey se hi dobara translate hota
- * hai, saved text se nahi.
- * lang: "en" | "hi" | "mr" — default "en" agar kuch na bheja jaye
- */
-function translateProfile(classKey, lang = "en") {
-  const profile = DISEASE_PROFILES.find((p) => p.classKey === classKey);
+function translateIPM(classKey, lang = "en") {
+  const profile = IPM_PROFILES[classKey];
+
+  if (!profile) return null;
+
+  return profile[lang] || profile.en;
+}
+function translateProfile(
+  classKey,
+  lang = "en",
+  modelConfidence = null
+) {
+  const profile = DISEASE_PROFILES.find(
+    (p) => p.classKey === classKey
+  );
+
   if (!profile) return null;
 
   return {
     classKey,
-    crop: profile.crop[lang] || profile.crop.en,
-    disease: profile.disease[lang] || profile.disease.en,
-    severity: profile.severity, // "Low"/"Medium"/"High" hamesha English mein — frontend isko already translate karta hai badge ke liye
-    severityPercent: profile.severityPercent,
-    confidence: profile.confidence,
-    recommendation: profile.recommendation[lang] || profile.recommendation.en,
+
+    crop:
+      profile.crop[lang] ||
+      profile.crop.en,
+
+    disease:
+      profile.disease[lang] ||
+      profile.disease.en,
+
+    severity: profile.severity,
+
+    severityPercent:
+      profile.severityPercent,
+
+    confidence:
+      modelConfidence !== null
+        ? modelConfidence
+        : profile.confidence,
+
+    recommendation:
+      profile.recommendation[lang] ||
+      profile.recommendation.en,
+      ipm: translateIPM(classKey, lang),
   };
 }
 
-/*
-FUTURE REAL AI VERSION:
-Real model se sirf ek FIXED class name milega (jaise "Tomato_Early_Blight").
-Us class name ko upar wali DISEASE_PROFILES table mein match karke
-translated version nikaal lena — poora translation kaam already ho chuka
-hoga, sirf lookup karna hoga:
 
-async function detectDiseaseClass(imageBuffer) {
-  const response = await axios.post(process.env.AI_SERVICE_URL, imageBuffer, {...});
-  return response.data.class; // e.g. "Tomato_Early_Blight" — translateProfile() still does the rest
-}
-*/
-
-module.exports = { detectDiseaseClass, translateProfile, DISEASE_PROFILES };
+module.exports = {
+  detectDiseaseClass,
+  translateProfile,
+  DISEASE_PROFILES,
+};

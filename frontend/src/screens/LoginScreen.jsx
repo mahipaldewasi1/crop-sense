@@ -26,17 +26,51 @@ export default function LoginScreen() {
   const navigate = useNavigate();
   const { login: setAuthUser } = useAuth();
 
-  function detectLocation() {
-    if (!navigator.geolocation) {
-      setLocation({ lat: 26.6, lng: 74.86, label: "Kishangarh, Rajasthan" });
-      return;
-    }
-    navigator.geolocation.getCurrentPosition(
-      (pos) => setLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude, label: "Current location" }),
-      () => setLocation({ lat: 26.6, lng: 74.86, label: "Kishangarh, Rajasthan" })
-    );
+ async function detectLocation() {
+  if (!navigator.geolocation) {
+    setLocation(null);
+    return;
   }
 
+  navigator.geolocation.getCurrentPosition(
+    async (pos) => {
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=10`
+        );
+
+        const data = await res.json();
+        const address = data.address || {};
+
+        const city =
+          address.city ||
+          address.town ||
+          address.village ||
+          address.municipality ||
+          address.county ||
+          "Unknown location";
+
+        const state = address.state || "";
+
+        setLocation({
+          lat,
+          lng,
+          label: state ? `${city}, ${state}` : city,
+        });
+      } catch (error) {
+        setLocation({
+          lat,
+          lng,
+          label: "Current location",
+        });
+      }
+    },
+    () => setLocation(null)
+  );
+}
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
