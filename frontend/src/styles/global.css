@@ -1,0 +1,79 @@
+/* Global reset + default typography.
+   This is what was missing: without a font-family on `body`,
+   any element that doesn't set one inline falls back to the
+   browser's default serif — which is why plain <p> text was
+   rendering serif everywhere despite Inter being loaded. */
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Form elements don't inherit the body font by default in most
+   browsers — buttons/selects can silently fall back to serif too. */
+button, input, select, textarea {
+  font-family: inherit;
+}
+
+a {
+  color: inherit;
+}
+
+/* Smooth, deliberate motion on anything interactive — the single biggest
+   thing separating "coded" from "designed". Kept short (160ms) so it reads
+   as responsive, not sluggish. */
+button, a, input, select, textarea, .cs-nav-item {
+  transition: background-color 0.16s ease, border-color 0.16s ease,
+              color 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease,
+              opacity 0.16s ease;
+}
+
+button {
+  font-family: inherit;
+}
+
+/* Consistent, visible keyboard focus ring across the app instead of the
+   browser default (or nothing, on custom divs-as-buttons). */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid #E0942C;
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+::selection {
+  background: #E0942C;
+  color: #15281F;
+}
+
+/* Custom scrollbar so it matches the palette instead of the OS default. */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: #D9D6C7;
+  border-radius: 8px;
+  border: 2px solid #F4F3EC;
+}
+::-webkit-scrollbar-thumb:hover { background: #C4C0AC; }
+
+input::placeholder, textarea::placeholder {
+  color: #9AA294;
+}
+
+@keyframes cs-fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.cs-animate-in { animation: cs-fade-up 0.35s ease both; }

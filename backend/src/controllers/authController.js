@@ -6,7 +6,7 @@ function generateToken(userId) {
   return jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: "30d" });
 }
 
-// POST /api/auth/register
+
 async function register(req, res) {
   try {
     const { name, phone, password, location } = req.body;
@@ -40,7 +40,7 @@ async function register(req, res) {
   }
 }
 
-// POST /api/auth/login
+
 async function login(req, res) {
   try {
     const { phone, password } = req.body;

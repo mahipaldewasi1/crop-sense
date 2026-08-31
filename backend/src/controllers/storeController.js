@@ -1,6 +1,6 @@
 const STORES = require("../data/stores");
 
-// Simple straight-line distance in km (Haversine formula)
+
 function distanceKm(lat1, lng1, lat2, lng2) {
   const R = 6371;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
@@ -12,7 +12,7 @@ function distanceKm(lat1, lng1, lat2, lng2) {
   return R * c;
 }
 
-// GET /api/stores?lat=..&lng=..
+
 function getNearbyStores(req, res) {
   const lat = parseFloat(req.query.lat) || 26.6,
     lng = parseFloat(req.query.lng) || 74.86;

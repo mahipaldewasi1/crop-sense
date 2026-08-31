@@ -1,9 +1,5 @@
 const multer = require("multer");
 const path = require("path");
-
-// MVP: image disk pe save hoti hai /uploads folder mein.
-// FUTURE: Cloudinary/Firebase Storage use karke isse cloud pe move karna
-// - sirf storage engine change karna hoga, baaki controller code same rahega.
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, path.join(__dirname, "..", "..", "uploads")),
   filename: (req, file, cb) => {

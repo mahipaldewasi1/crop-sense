@@ -13,7 +13,13 @@ function getToken() {
 
 async function handleResponse(res) {
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.message || "Something went wrong");
+  if (!res.ok) {
+  throw new Error(
+    data.message ||
+    data.detail ||
+    "Something went wrong"
+  );
+}
   return data;
 }
 
@@ -35,22 +41,72 @@ export async function loginUser({ phone, password }) {
   return handleResponse(res);
 }
 
-export async function uploadScan(imageFile) {
+export async function uploadScan(
+  imageFile,
+  lang = "en",
+  crop = "tomato"
+) {
   const formData = new FormData();
+
   formData.append("image", imageFile);
+  formData.append("lang", lang);
+  formData.append("crop", crop);
 
   const res = await fetch(`${API_URL}/scan`, {
     method: "POST",
-    headers: { Authorization: `Bearer ${getToken()}` },
+    headers: {
+      Authorization: `Bearer ${getToken()}`,
+    },
     body: formData,
   });
+
   return handleResponse(res);
 }
 
-export async function getScanHistory() {
-  const res = await fetch(`${API_URL}/scan/history`, {
+export async function getScanHistory(lang = "en") {
+  const res = await fetch(`${API_URL}/scan/history?lang=${lang}`, {
     headers: { Authorization: `Bearer ${getToken()}` },
   });
+  return handleResponse(res);
+}
+export async function getMonitoring() {
+  const res = await fetch(`${API_URL}/scan/monitoring`, {
+    headers: {
+      Authorization: `Bearer ${getToken()}`,
+    },
+  });
+
+  return handleResponse(res);
+}
+export async function startFollowUp(scanId) {
+  const res = await fetch(`${API_URL}/scan/${scanId}/follow-up`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${getToken()}`,
+      "Content-Type": "application/json",
+    },
+  });
+
+  return handleResponse(res);
+}
+
+export async function getFollowUps() {
+  const res = await fetch(`${API_URL}/scan/follow-ups`, {
+    headers: {
+      Authorization: `Bearer ${getToken()}`,
+    },
+  });
+
+  return handleResponse(res);
+}
+
+export async function getFollowUp(id) {
+  const res = await fetch(`${API_URL}/scan/follow-ups/${id}`, {
+    headers: {
+      Authorization: `Bearer ${getToken()}`,
+    },
+  });
+
   return handleResponse(res);
 }
 
@@ -58,5 +114,23 @@ export async function getNearbyStores(lat, lng) {
   const res = await fetch(`${API_URL}/stores?lat=${lat}&lng=${lng}`);
   return handleResponse(res);
 }
+export async function getWeather(lat, lng) {
+  const url =
+    `https://api.open-meteo.com/v1/forecast` +
+    `?latitude=${lat}` +
+    `&longitude=${lng}` +
+    `&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m` +
+    `&hourly=precipitation_probability,weather_code` +
+    `&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max` +
+    `&timezone=auto` +
+    `&forecast_days=5`;
 
+  const res = await fetch(url);
+
+  if (!res.ok) {
+    throw new Error("Unable to get weather");
+  }
+
+  return res.json();
+}
 export { API_URL, getToken };

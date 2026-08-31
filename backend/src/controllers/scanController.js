@@ -1,8 +1,8 @@
 const fs = require("fs");
 const Scan = require("../models/Scan");
-const { detectDisease } = require("../services/aiService");
+const { detectDiseaseClass, translateProfile } = require("../services/aiService");
 
-// POST /api/scan  (protected, multipart/form-data with field "image")
+
 async function createScan(req, res) {
   try {
     if (!req.file) {
@@ -10,28 +10,300 @@ async function createScan(req, res) {
     }
 
     const imageBuffer = fs.readFileSync(req.file.path);
-    const result = detectDisease(imageBuffer); // { crop, disease, severity, severityPercent, confidence, recommendation }
+    const crop = (req.body.crop || "tomato").trim().toLowerCase();
+    console.log("========== SCAN DEBUG ==========");
+console.log("req.body:", req.body);
+console.log("Selected crop:", crop);
+console.log("File:", req.file?.originalname);
+console.log("================================");
 
-    const scan = await Scan.create({
-      user: req.userId,
-      imageUrl: `/uploads/${req.file.filename}`,
-      ...result,
-    });
+const prediction = await detectDiseaseClass(
+  imageBuffer,
+  req.file.mimetype,
+  crop
+);
+console.log("========== ML RESPONSE ==========");
+console.log("ML returned crop:", prediction.crop);
+console.log("ML returned label:", prediction.modelLabel);
+console.log("ML confidence:", prediction.confidence);
+console.log("Mapped classKey:", prediction.classKey);
+console.log("================================");
+if (prediction.confidence < 40) {
+  return res.status(200).json({
+    scan: null,
+    uncertain: true,
+    message:
+      "The AI could not confidently identify the disease. Please capture a clear close-up of the affected leaf or consult an expert.",
+    crop: prediction.crop,
+    disease: prediction.modelLabel,
+    confidence: prediction.confidence,
+    topPredictions: prediction.topPredictions,
+  });
+}
+if (!prediction.classKey) {
+  return res.status(422).json({
+    message: "The detected disease is not currently supported by CropSense.",
+    modelLabel: prediction.modelLabel,
+    confidence: prediction.confidence,
+  });
+}
 
-    res.status(201).json({ scan });
+const classKey = prediction.classKey;
+const lang = req.body.lang || "en";
+
+const translated = translateProfile(
+  classKey,
+  lang,
+  prediction.confidence
+);
+
+const englishFallback = translateProfile(
+  classKey,
+  "en",
+  prediction.confidence
+);
+
+const scan = await Scan.create({
+  user: req.userId,
+  imageUrl: `/uploads/${req.file.filename}`,
+  classKey,
+  crop: englishFallback.crop,
+  disease: englishFallback.disease,
+  recommendation: englishFallback.recommendation,
+  severity: translated.severity,
+  severityPercent: translated.severityPercent,
+  confidence: translated.confidence,
+  ipm: translated.ipm,
+});
+
+    // Respond with the requested-language version, not the English fallback we saved
+    const scanObj = scan.toObject();
+    res.status(201).json({
+  scan: {
+    ...scanObj,
+    crop: translated.crop,
+    disease: translated.disease,
+    recommendation: translated.recommendation,
+    ipm: translated.ipm,
+  },
+});
   } catch (err) {
-    res.status(500).json({ message: "Scan failed", error: err.message });
+  console.error("========== SCAN ERROR ==========");
+  console.error(err);
+  console.error("Message:", err.message);
+  console.error("Stack:", err.stack);
+  console.error("================================");
+
+  res.status(500).json({
+    message: "Scan failed",
+    error: err.message,
+  });
   }
 }
 
-// GET /api/scan/history  (protected) - Home screen ke "recent scans" ke liye
+// GET /api/scan/history?lang=en|hi|mr  (protected) - Home screen ke "recent scans" ke liye
 async function getHistory(req, res) {
   try {
+    const lang = req.query.lang || "en";
     const scans = await Scan.find({ user: req.userId }).sort({ createdAt: -1 }).limit(10);
-    res.json({ scans });
+
+    // Re-translate every scan from its classKey, so switching language on the
+    // frontend also updates OLD scans in history — not just new ones.
+    const localized = scans.map((s) => {
+      const scanObj = s.toObject();
+      if (!s.classKey) return scanObj; // legacy scan saved before classKey existed — show as originally saved
+      const translated = translateProfile(s.classKey, lang);
+      if (!translated) return scanObj;
+      return {
+  ...scanObj,
+  crop: translated.crop,
+  disease: translated.disease,
+  recommendation: translated.recommendation,
+  ipm: translated.ipm,
+};
+    });
+
+    res.json({ scans: localized });
   } catch (err) {
     res.status(500).json({ message: "Could not fetch history", error: err.message });
   }
 }
+// POST /api/scan/:scanId/follow-up
+// Start follow-up monitoring for an existing scan.
+async function startFollowUp(req, res) {
+  try {
+    const { scanId } = req.params;
 
-module.exports = { createScan, getHistory };
+    const scan = await Scan.findOne({
+      _id: scanId,
+      user: req.userId,
+    });
+
+    if (!scan) {
+      return res.status(404).json({
+        message: "Scan not found",
+      });
+    }
+
+    // Don't allow multiple active follow-ups
+    if (
+      scan.followUp &&
+      scan.followUp.enabled &&
+      scan.followUp.status === "pending"
+    ) {
+      return res.status(400).json({
+        message: "Follow-up monitoring is already active",
+        followUp: scan.followUp,
+      });
+    }
+
+    // Default: 7 days from now
+    const days = Number(req.body.days) || 7;
+
+    const dueDate = new Date();
+    dueDate.setDate(dueDate.getDate() + days);
+
+    scan.followUp = {
+      enabled: true,
+      dueDate,
+      status: "pending",
+      scans: [],
+    };
+
+    await scan.save();
+
+    res.status(200).json({
+      message: "Follow-up monitoring started",
+      followUp: scan.followUp,
+    });
+  } catch (err) {
+    console.error("========== FOLLOW-UP START ERROR ==========");
+    console.error(err);
+    console.error("===========================================");
+
+    res.status(500).json({
+      message: "Could not start follow-up monitoring",
+      error: err.message,
+    });
+  }
+}
+
+
+// GET /api/scan/follow-ups
+// Get all follow-ups belonging to the logged-in farmer.
+async function getFollowUps(req, res) {
+  try {
+    const scans = await Scan.find({
+      user: req.userId,
+      "followUp.enabled": true,
+    }).sort({
+      "followUp.dueDate": 1,
+    });
+
+    res.json({
+      followUps: scans,
+    });
+  } catch (err) {
+    console.error("FOLLOW-UP FETCH ERROR:", err);
+
+    res.status(500).json({
+      message: "Could not fetch follow-ups",
+      error: err.message,
+    });
+  }
+}
+
+
+// GET /api/scan/:scanId/follow-up
+// Get one follow-up and calculate its current status.
+async function getFollowUp(req, res) {
+  try {
+    const { scanId } = req.params;
+
+    const scan = await Scan.findOne({
+      _id: scanId,
+      user: req.userId,
+    });
+
+    if (!scan) {
+      return res.status(404).json({
+        message: "Scan not found",
+      });
+    }
+
+    if (!scan.followUp || !scan.followUp.enabled) {
+      return res.status(404).json({
+        message: "Follow-up monitoring has not been started",
+      });
+    }
+
+    let comparison = null;
+
+    if (
+      scan.followUp.scans &&
+      scan.followUp.scans.length > 0
+    ) {
+      const latest =
+        scan.followUp.scans[
+          scan.followUp.scans.length - 1
+        ];
+
+      const initialSeverity = scan.severityPercent;
+      const currentSeverity = latest.severityPercent;
+
+      const change =
+        currentSeverity - initialSeverity;
+
+      let status = "stable";
+
+      if (change <= -10) {
+        status = "improving";
+      } else if (change >= 10) {
+        status = "worsening";
+      }
+
+      comparison = {
+        status,
+
+        change,
+
+        initial: {
+          disease: scan.disease,
+          classKey: scan.classKey,
+          severity: scan.severity,
+          severityPercent: initialSeverity,
+          confidence: scan.confidence,
+          date: scan.createdAt,
+        },
+
+        current: {
+          disease: latest.disease,
+          classKey: latest.classKey,
+          severity: latest.severity,
+          severityPercent: currentSeverity,
+          confidence: latest.confidence,
+          date: latest.date,
+        },
+      };
+    }
+
+    res.json({
+      followUp: scan.followUp,
+      comparison,
+    });
+  } catch (err) {
+    console.error("FOLLOW-UP DETAIL ERROR:", err);
+
+    res.status(500).json({
+      message: "Could not fetch follow-up",
+      error: err.message,
+    });
+  }
+}
+module.exports = {
+  createScan,
+  getHistory,
+  startFollowUp,
+  getFollowUps,
+  getFollowUp,
+};

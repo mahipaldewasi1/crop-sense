@@ -5,8 +5,12 @@ import { COLORS } from "../styles/theme";
 export default function TopBar({ title, onBack }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "6px 20px 14px 14px", flexShrink: 0 }}>
+      <style>{`
+        .cs-topbar-back { transition: background-color 0.16s ease, border-color 0.16s ease, transform 0.16s ease; }
+        .cs-topbar-back:hover { background: ${COLORS.line}44; border-color: ${COLORS.forest}; transform: translateX(-1px); }
+      `}</style>
       {onBack ? (
-        <button onClick={onBack} style={{
+        <button onClick={onBack} className="cs-topbar-back" style={{
           background: COLORS.cream, border: `1px solid ${COLORS.line}`, borderRadius: 12,
           width: 34, height: 34, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer",
         }}>
