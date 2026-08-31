@@ -69,6 +69,46 @@ export async function getScanHistory(lang = "en") {
   });
   return handleResponse(res);
 }
+export async function getMonitoring() {
+  const res = await fetch(`${API_URL}/scan/monitoring`, {
+    headers: {
+      Authorization: `Bearer ${getToken()}`,
+    },
+  });
+
+  return handleResponse(res);
+}
+export async function startFollowUp(scanId) {
+  const res = await fetch(`${API_URL}/scan/${scanId}/follow-up`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${getToken()}`,
+      "Content-Type": "application/json",
+    },
+  });
+
+  return handleResponse(res);
+}
+
+export async function getFollowUps() {
+  const res = await fetch(`${API_URL}/scan/follow-ups`, {
+    headers: {
+      Authorization: `Bearer ${getToken()}`,
+    },
+  });
+
+  return handleResponse(res);
+}
+
+export async function getFollowUp(id) {
+  const res = await fetch(`${API_URL}/scan/follow-ups/${id}`, {
+    headers: {
+      Authorization: `Bearer ${getToken()}`,
+    },
+  });
+
+  return handleResponse(res);
+}
 
 export async function getNearbyStores(lat, lng) {
   const res = await fetch(`${API_URL}/stores?lat=${lat}&lng=${lng}`);

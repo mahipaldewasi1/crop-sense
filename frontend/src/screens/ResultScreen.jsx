@@ -6,8 +6,9 @@ import {
   Store,
   Camera,
   UserCheck,
+  ClipboardCheck,
 } from "lucide-react";
-
+import { startFollowUp } from "../api/client";
 import { COLORS } from "../styles/theme";
 import TopBar from "../components/TopBar";
 import PrimaryButton from "../components/PrimaryButton";
@@ -71,8 +72,59 @@ export default function ResultScreen() {
   const navigate = useNavigate();
 
   const scan = state?.scan;
+  console.log("CURRENT SCAN:", scan);
+  const [followUpLoading, setFollowUpLoading] = React.useState(false);
+
+async function handleStartFollowUp() {
+  try {
+    if (!scan?._id) {
+      console.error("No scan ID available:", scan);
+      alert("This scan cannot be added to follow-up monitoring.");
+      return;
+    }
+
+    setFollowUpLoading(true);
+
+    console.log("Starting follow-up for scan:", scan._id);
+
+    await startFollowUp(scan._id);
+
+    navigate("/follow-up");
+  } catch (err) {
+    console.error("Follow-up error:", err);
+    alert(err.message || "Could not start follow-up monitoring.");
+  } finally {
+    setFollowUpLoading(false);
+  }
+}
   const uncertain = state?.uncertain || false;
   const [expertStatus, setExpertStatus] = React.useState("not_requested");
+  const [followUpStarting, setFollowUpStarting] = React.useState(false);
+const [followUpStarted, setFollowUpStarted] = React.useState(false);
+
+async function handleStartFollowUp() {
+  if (!scan?._id) {
+    console.error("No scan ID available:", scan);
+    return;
+  }
+
+  try {
+    setFollowUpStarting(true);
+
+    const { startFollowUp } = await import("../api/client");
+
+    await startFollowUp(scan._id);
+
+   setFollowUpStarted(true);
+navigate("/follow-up");
+
+  } catch (err) {
+    console.error("Start follow-up error:", err);
+    alert(err.message || "Could not start follow-up monitoring.");
+  } finally {
+    setFollowUpStarting(false);
+  }
+}
 
   /* ------------------------------------------------------
    * UNCERTAIN AI RESULT
@@ -264,7 +316,91 @@ export default function ResultScreen() {
               </SectionLabel>
               <p style={{ margin: 0, fontSize: 13.5, color: COLORS.ink, lineHeight: 1.6 }}>{scan.recommendation}</p>
             </Card>
+{/* Follow-up Monitoring */}
+<Card accentColor={COLORS.forest}>
+  <SectionLabel
+    icon={<ClipboardCheck size={16} color={COLORS.forest} />}
+    color={COLORS.forest}
+  >
+    Follow-up Monitoring
+  </SectionLabel>
 
+  <p
+    style={{
+      margin: "0 0 12px",
+      fontSize: 13,
+      color: COLORS.inkSoft,
+      lineHeight: 1.6,
+    }}
+  >
+    Track this crop after treatment and check whether the
+    disease is improving, stable, or getting worse.
+  </p>
+
+  {followUpStarted ? (
+    <div
+    
+  style={{
+    display: "flex",
+    gap: 10,
+    alignItems: "center",
+    flexWrap: "wrap",
+  }}
+>
+  <div
+    style={{
+      padding: "11px 13px",
+      borderRadius: 10,
+      background: "rgba(62,125,83,0.1)",  
+      color: COLORS.forest,
+      fontSize: 12.5,
+      fontWeight: 700,
+      flex: 1,
+    }}
+  >
+    ✓ Follow-up monitoring started
+  </div>
+
+  <button
+    type="button"
+    onClick={() => navigate("/follow-up")}
+    style={{
+      border: `1px solid ${COLORS.forest}`,
+      background: "transparent",
+      color: COLORS.forest,
+      padding: "10px 14px",
+      borderRadius: 10,
+      fontSize: 12,
+      fontWeight: 700,
+      cursor: "pointer",
+    }}
+  >
+    View Monitoring
+  </button>
+</div>
+  ) : (
+    <button
+      type="button"
+      onClick={handleStartFollowUp}
+      disabled={followUpStarting}
+      style={{
+        border: "none",
+        background: COLORS.forest,
+        color: "#fff",
+        padding: "10px 15px",
+        borderRadius: 10,
+        fontSize: 12.5,
+        fontWeight: 700,
+        cursor: followUpStarting ? "wait" : "pointer",
+        opacity: followUpStarting ? 0.7 : 1,
+      }}
+    >
+      {followUpStarting
+        ? "Starting monitoring..."
+        : "Start Follow-up Monitoring"}
+    </button>
+  )}
+</Card>
             {/* IPM recommendations — flattened, no card-inside-a-card */}
             {scan.ipm && (
               <Card>

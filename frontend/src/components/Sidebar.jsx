@@ -1,6 +1,15 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
-import { Home, ScanLine, Store, Map, LogOut, Leaf, X } from "lucide-react";
+import {
+  Home,
+  ScanLine,
+  Store,
+  Map,
+  LogOut,
+  Leaf,
+  X,
+  ClipboardCheck,
+} from "lucide-react";
 import { COLORS } from "../styles/theme";
 import { useLanguage } from "../i18n/LanguageContext";
 import { useAuth } from "../context/AuthContext";
@@ -15,12 +24,13 @@ export default function Sidebar({ isOpen, onClose }) {
   const { t, lang, changeLang } = useLanguage();
   const { logout, user } = useAuth();
 
-  const navItems = [
-    { to: "/home", label: t("home"), icon: Home },
-    { to: "/scan", label: t("scan"), icon: ScanLine },
-    { to: "/disease-map", label: "Disease Map", icon: Map },
-    { to: "/store", label: t("stores"), icon: Store },
-  ];
+const navItems = [
+  { to: "/home", label: t("home"), icon: Home },
+  { to: "/scan", label: t("scan"), icon: ScanLine },
+  { to: "/disease-map", label: "Disease Map", icon: Map },
+  { to: "/follow-up", label: "Follow-up Monitoring", icon: ClipboardCheck },
+  { to: "/store", label: t("stores"), icon: Store },
+];
 
   return (
     <>

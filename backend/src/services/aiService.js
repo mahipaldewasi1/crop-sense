@@ -136,6 +136,271 @@ const DISEASE_PROFILES = [
   },
 },
 ];
+
+const ADDITIONAL_PROFILES = [
+    
+  // =====================================================
+  // TOMATO
+  // =====================================================
+
+  {
+    classKey: "Tomato_Bacterial_Spot",
+    crop: {
+      en: "Tomato",
+      hi: "टमाटर",
+      mr: "टोमॅटो",
+    },
+    disease: {
+      en: "Bacterial Spot",
+      hi: "जीवाणु धब्बा",
+      mr: "जिवाणू ठिपका",
+    },
+    severity: "Medium",
+    severityPercent: 55,
+    recommendation: {
+      en: "Remove severely affected leaves, maintain field sanitation, avoid prolonged leaf wetness, and follow locally approved disease-management guidance.",
+      hi: "अधिक प्रभावित पत्तियां हटाएं, खेत की स्वच्छता बनाए रखें, पत्तियों को लंबे समय तक गीला रहने से बचाएं और स्थानीय रूप से स्वीकृत रोग प्रबंधन सलाह का पालन करें।",
+      mr: "जास्त बाधित पाने काढून टाका, शेताची स्वच्छता राखा, पाने जास्त वेळ ओलसर राहू देऊ नका आणि स्थानिक मान्य रोग व्यवस्थापन सल्ल्याचे पालन करा.",
+    },
+  },
+
+  {
+    classKey: "Tomato_Late_Blight",
+    crop: {
+      en: "Tomato",
+      hi: "टमाटर",
+      mr: "टोमॅटो",
+    },
+    disease: {
+      en: "Late Blight",
+      hi: "पछेती झुलसा",
+      mr: "उशिरा करपा",
+    },
+    severity: "High",
+    severityPercent: 80,
+    recommendation: {
+      en: "Inspect plants frequently, remove severely affected material where practical, reduce prolonged leaf wetness, and use locally approved disease-management options when treatment is justified.",
+      hi: "पौधों की नियमित जांच करें, जहां संभव हो गंभीर रूप से प्रभावित हिस्से हटाएं, पत्तियों के लंबे समय तक गीले रहने को कम करें और उपचार आवश्यक होने पर स्थानीय रूप से स्वीकृत विकल्पों का उपयोग करें।",
+      mr: "पिकाची नियमित पाहणी करा, शक्य असल्यास जास्त बाधित भाग काढून टाका, पाने जास्त वेळ ओलसर राहणे कमी करा आणि उपचार आवश्यक असल्यास स्थानिक मान्य पर्याय वापरा.",
+    },
+  },
+
+  {
+    classKey: "Tomato_Leaf_Mold",
+    crop: {
+      en: "Tomato",
+      hi: "टमाटर",
+      mr: "टोमॅटो",
+    },
+    disease: {
+      en: "Leaf Mold",
+      hi: "पत्ती फफूंदी",
+      mr: "पानांवरील बुरशी",
+    },
+    severity: "Medium",
+    severityPercent: 50,
+    recommendation: {
+      en: "Improve ventilation, reduce prolonged leaf wetness, remove severely affected leaves where practical, and follow locally approved disease-management guidance.",
+      hi: "वेंटिलेशन बेहतर करें, पत्तियों के लंबे समय तक गीले रहने को कम करें, जहां संभव हो प्रभावित पत्तियां हटाएं और स्थानीय रोग प्रबंधन सलाह का पालन करें।",
+      mr: "वायुवीजन सुधारित करा, पाने जास्त वेळ ओलसर राहू देऊ नका, शक्य असल्यास बाधित पाने काढून टाका आणि स्थानिक रोग व्यवस्थापन सल्ल्याचे पालन करा.",
+    },
+  },
+
+  {
+    classKey: "Tomato_Septoria_Leaf_Spot",
+    crop: {
+      en: "Tomato",
+      hi: "टमाटर",
+      mr: "टोमॅटो",
+    },
+    disease: {
+      en: "Septoria Leaf Spot",
+      hi: "सेप्टोरिया पत्ती धब्बा",
+      mr: "सेप्टोरिया पानावरील ठिपका",
+    },
+    severity: "Medium",
+    severityPercent: 55,
+    recommendation: {
+      en: "Remove severely affected lower leaves where practical, maintain field sanitation, avoid overhead irrigation, and follow locally approved disease-management guidance.",
+      hi: "जहां संभव हो गंभीर रूप से प्रभावित निचली पत्तियां हटाएं, खेत की स्वच्छता बनाए रखें, ऊपर से सिंचाई से बचें और स्थानीय रोग प्रबंधन सलाह का पालन करें।",
+      mr: "शक्य असल्यास जास्त बाधित खालची पाने काढून टाका, शेताची स्वच्छता राखा, वरून सिंचन टाळा आणि स्थानिक रोग व्यवस्थापन सल्ल्याचे पालन करा.",
+    },
+  },
+
+  {
+    classKey: "Tomato_Spider_Mites",
+    crop: {
+      en: "Tomato",
+      hi: "टमाटर",
+      mr: "टोमॅटो",
+    },
+    disease: {
+      en: "Spider Mites",
+      hi: "स्पाइडर माइट्स",
+      mr: "कोळी कीड",
+    },
+    severity: "Medium",
+    severityPercent: 55,
+    recommendation: {
+      en: "Inspect the undersides of leaves for mite activity and webbing, reduce plant stress, and use locally approved pest-management options when treatment is justified.",
+      hi: "पत्तियों की निचली सतह पर माइट्स और जाले देखें, पौधों का तनाव कम करें और उपचार आवश्यक होने पर स्थानीय रूप से स्वीकृत कीट प्रबंधन विकल्पों का उपयोग करें।",
+      mr: "पानांच्या खालच्या बाजूस कोळी किडीची हालचाल व जाळी तपासा, झाडावरील ताण कमी करा आणि उपचार आवश्यक असल्यास स्थानिक मान्य कीड व्यवस्थापन पर्याय वापरा.",
+    },
+  },
+
+  {
+    classKey: "Tomato_Target_Spot",
+    crop: {
+      en: "Tomato",
+      hi: "टमाटर",
+      mr: "टोमॅटो",
+    },
+    disease: {
+      en: "Target Spot",
+      hi: "टारगेट स्पॉट",
+      mr: "टार्गेट स्पॉट",
+    },
+    severity: "Medium",
+    severityPercent: 55,
+    recommendation: {
+      en: "Scout regularly for expanding leaf lesions, remove severely affected material where practical, maintain sanitation, and use locally approved disease-management options when justified.",
+      hi: "फैलते हुए पत्ती धब्बों के लिए नियमित निगरानी करें, जहां संभव हो गंभीर रूप से प्रभावित हिस्से हटाएं, स्वच्छता बनाए रखें और आवश्यकता होने पर स्थानीय रूप से स्वीकृत विकल्पों का उपयोग करें।",
+      mr: "पानांवरील वाढणाऱ्या डागांसाठी नियमित पाहणी करा, शक्य असल्यास जास्त बाधित भाग काढून टाका, स्वच्छता राखा आणि गरज असल्यास स्थानिक मान्य पर्याय वापरा.",
+    },
+  },
+
+  {
+    classKey: "Tomato_Mosaic_Virus",
+    crop: {
+      en: "Tomato",
+      hi: "टमाटर",
+      mr: "टोमॅटो",
+    },
+    disease: {
+      en: "Mosaic Virus",
+      hi: "मोज़ेक वायरस",
+      mr: "मोझॅक विषाणू",
+    },
+    severity: "High",
+    severityPercent: 75,
+    recommendation: {
+      en: "Remove severely affected plants where practical, use healthy planting material, control potential vectors, and avoid spreading plant sap between plants.",
+      hi: "जहां संभव हो गंभीर रूप से प्रभावित पौधों को हटाएं, स्वस्थ रोपण सामग्री का उपयोग करें, संभावित वाहकों को नियंत्रित करें और पौधों के बीच संक्रमित रस के प्रसार से बचें।",
+      mr: "शक्य असल्यास जास्त बाधित झाडे काढून टाका, निरोगी लागवड साहित्य वापरा, संभाव्य वाहक कीटकांचे नियंत्रण करा आणि झाडांमध्ये संक्रमित रसाचा प्रसार टाळा.",
+    },
+  },
+
+  {
+    classKey: "Tomato_Healthy",
+    crop: {
+      en: "Tomato",
+      hi: "टमाटर",
+      mr: "टोमॅटो",
+    },
+    disease: {
+      en: "Healthy",
+      hi: "स्वस्थ",
+      mr: "निरोगी",
+    },
+    severity: "Low",
+    severityPercent: 5,
+    recommendation: {
+      en: "No major disease signs detected. Continue regular scouting, maintain field sanitation and monitor the crop regularly.",
+      hi: "रोग के कोई प्रमुख लक्षण नहीं पाए गए। नियमित निरीक्षण जारी रखें, खेत की स्वच्छता बनाए रखें और फसल की निगरानी करते रहें।",
+      mr: "रोगाची ठळक लक्षणे आढळली नाहीत. नियमित पाहणी सुरू ठेवा, शेताची स्वच्छता राखा आणि पिकाचे नियमित निरीक्षण करा.",
+    },
+  },
+
+  // =====================================================
+  // MAIZE
+  // =====================================================
+
+  {
+    classKey: "Maize_Cercospora_Gray_Leaf_Spot",
+    crop: {
+      en: "Maize",
+      hi: "मक्का",
+      mr: "मका",
+    },
+    disease: {
+      en: "Cercospora and Gray Leaf Spot",
+      hi: "सर्कोस्पोरा और ग्रे लीफ स्पॉट",
+      mr: "सर्कोस्पोरा व ग्रे लीफ स्पॉट",
+    },
+    severity: "Medium",
+    severityPercent: 60,
+    recommendation: {
+      en: "Scout leaves regularly, maintain field sanitation, use appropriate crop rotation where practical, and follow locally approved disease-management guidance.",
+      hi: "पत्तियों की नियमित जांच करें, खेत की स्वच्छता बनाए रखें, जहां संभव हो उचित फसल चक्र अपनाएं और स्थानीय रोग प्रबंधन सलाह का पालन करें।",
+      mr: "पानांची नियमित पाहणी करा, शेताची स्वच्छता राखा, शक्य असल्यास योग्य पीक फेरपालट करा आणि स्थानिक रोग व्यवस्थापन सल्ल्याचे पालन करा.",
+    },
+  },
+
+  {
+    classKey: "Maize_Common_Rust",
+    crop: {
+      en: "Maize",
+      hi: "मक्का",
+      mr: "मका",
+    },
+    disease: {
+      en: "Common Rust",
+      hi: "कॉमन रस्ट",
+      mr: "सामान्य तांबेरा",
+    },
+    severity: "Medium",
+    severityPercent: 50,
+    recommendation: {
+      en: "Monitor leaves for rust pustules, use healthy seed, maintain good crop management, and follow locally approved disease-management guidance when intervention is justified.",
+      hi: "पत्तियों पर रतुआ के लक्षणों की निगरानी करें, स्वस्थ बीज का उपयोग करें और आवश्यकता होने पर स्थानीय रोग प्रबंधन सलाह का पालन करें।",
+      mr: "पानांवरील तांबेरा रोगाची लक्षणे तपासा, निरोगी बियाणे वापरा आणि गरज असल्यास स्थानिक रोग व्यवस्थापन सल्ल्याचे पालन करा.",
+    },
+  },
+
+  {
+    classKey: "Maize_Northern_Leaf_Blight",
+    crop: {
+      en: "Maize",
+      hi: "मक्का",
+      mr: "मका",
+    },
+    disease: {
+      en: "Northern Leaf Blight",
+      hi: "नॉर्दर्न लीफ ब्लाइट",
+      mr: "नॉर्दर्न लीफ ब्लाइट",
+    },
+    severity: "High",
+    severityPercent: 70,
+    recommendation: {
+      en: "Inspect leaves regularly for elongated lesions, maintain field sanitation, consider appropriate crop rotation, and use locally approved disease-management options when justified.",
+      hi: "लंबे धब्बों के लिए पत्तियों की नियमित जांच करें, खेत की स्वच्छता बनाए रखें, उचित फसल चक्र अपनाएं और आवश्यकता होने पर स्थानीय रूप से स्वीकृत विकल्पों का उपयोग करें।",
+      mr: "लांबट डागांसाठी पानांची नियमित पाहणी करा, शेताची स्वच्छता राखा, योग्य पीक फेरपालट करा आणि गरज असल्यास स्थानिक मान्य पर्याय वापरा.",
+    },
+  },
+
+  {
+    classKey: "Maize_Healthy",
+    crop: {
+      en: "Maize",
+      hi: "मक्का",
+      mr: "मका",
+    },
+    disease: {
+      en: "Healthy",
+      hi: "स्वस्थ",
+      mr: "निरोगी",
+    },
+    severity: "Low",
+    severityPercent: 5,
+    recommendation: {
+      en: "No major disease signs detected. Continue regular scouting, maintain field sanitation and monitor crop growth.",
+      hi: "रोग के कोई प्रमुख लक्षण नहीं पाए गए। नियमित निरीक्षण जारी रखें, खेत की स्वच्छता बनाए रखें और फसल की वृद्धि की निगरानी करें।",
+      mr: "रोगाची ठळक लक्षणे आढळली नाहीत. नियमित पाहणी सुरू ठेवा, शेताची स्वच्छता राखा आणि पिकाच्या वाढीवर लक्ष ठेवा.",
+    },
+  },
+]
+  DISEASE_PROFILES.push(...ADDITIONAL_PROFILES);
+  
 const IPM_PROFILES = {
   Tomato_Early_Blight: {
     en: {
@@ -577,12 +842,45 @@ const IPM_PROFILES = {
  * that our existing recommendation/translation system understands.
  */
 const MODEL_LABEL_MAP = {
-  "Tomato___Early_blight": "Tomato_Early_Blight",
-  "Tomato___Tomato_Yellow_Leaf_Curl_Virus": "Tomato_Leaf_Curl_Virus",
+  // =========================
+  // TOMATO
+  // =========================
 
-  "Potato___Early_blight": "Potato_Early_Blight",
-  "Potato___Late_blight": "Potato_Late_Blight",
-  "Potato___healthy": "Potato_Healthy",
+  "Tomato with Bacterial Spot": "Tomato_Bacterial_Spot",
+  "Tomato with Early Blight": "Tomato_Early_Blight",
+  "Tomato with Late Blight": "Tomato_Late_Blight",
+  "Tomato with Leaf Mold": "Tomato_Leaf_Mold",
+  "Tomato with Septoria Leaf Spot": "Tomato_Septoria_Leaf_Spot",
+  "Tomato with Spider Mites or Two-spotted Spider Mite":
+    "Tomato_Spider_Mites",
+  "Tomato with Target Spot": "Tomato_Target_Spot",
+  "Tomato Yellow Leaf Curl Virus": "Tomato_Leaf_Curl_Virus",
+  "Tomato Mosaic Virus": "Tomato_Mosaic_Virus",
+  "Healthy Tomato Plant": "Tomato_Healthy",
+
+  // =========================
+  // POTATO
+  // =========================
+
+  "Potato with Early Blight": "Potato_Early_Blight",
+  "Potato with Late Blight": "Potato_Late_Blight",
+  "Healthy Potato Plant": "Potato_Healthy",
+
+  // =========================
+  // MAIZE / CORN
+  // =========================
+
+  "Corn (Maize) with Cercospora and Gray Leaf Spot":
+    "Maize_Cercospora_Gray_Leaf_Spot",
+
+  "Corn (Maize) with Common Rust":
+    "Maize_Common_Rust",
+
+  "Corn (Maize) with Northern Leaf Blight":
+    "Maize_Northern_Leaf_Blight",
+
+  "Healthy Corn (Maize) Plant":
+    "Maize_Healthy",
 };
 
 
@@ -666,33 +964,186 @@ function translateProfile(
     (p) => p.classKey === classKey
   );
 
-  if (!profile) return null;
+  // ----------------------------------
+  // Known detailed profile
+  // ----------------------------------
+  if (profile) {
+    return {
+      classKey,
+
+      crop:
+        profile.crop[lang] ||
+        profile.crop.en,
+
+      disease:
+        profile.disease[lang] ||
+        profile.disease.en,
+
+      severity: profile.severity,
+
+      severityPercent:
+        profile.severityPercent,
+
+      confidence:
+        modelConfidence !== null
+          ? modelConfidence
+          : profile.confidence,
+
+      recommendation:
+        profile.recommendation[lang] ||
+        profile.recommendation.en,
+
+      ipm: translateIPM(classKey, lang),
+    };
+  }
+
+  // ----------------------------------
+  // Generic fallback for supported ML
+  // diseases that don't have a custom
+  // profile yet
+  // ----------------------------------
+
+  const fallbackNames = {
+    Tomato_Bacterial_Spot: {
+      en: ["Tomato", "Bacterial Spot"],
+      hi: ["टमाटर", "जीवाणु धब्बा"],
+      mr: ["टोमॅटो", "जिवाणू ठिपका"],
+    },
+
+    Tomato_Late_Blight: {
+      en: ["Tomato", "Late Blight"],
+      hi: ["टमाटर", "पछेती झुलसा"],
+      mr: ["टोमॅटो", "उशिरा करपा"],
+    },
+
+    Tomato_Leaf_Mold: {
+      en: ["Tomato", "Leaf Mold"],
+      hi: ["टमाटर", "पत्ती फफूंद"],
+      mr: ["टोमॅटो", "पानावरील बुरशी"],
+    },
+
+    Tomato_Septoria_Leaf_Spot: {
+      en: ["Tomato", "Septoria Leaf Spot"],
+      hi: ["टमाटर", "सेप्टोरिया पत्ती धब्बा"],
+      mr: ["टोमॅटो", "सेप्टोरिया पानावरील ठिपका"],
+    },
+
+    Tomato_Spider_Mites: {
+      en: ["Tomato", "Spider Mites"],
+      hi: ["टमाटर", "स्पाइडर माइट"],
+      mr: ["टोमॅटो", "कोळी माइट"],
+    },
+
+    Tomato_Target_Spot: {
+      en: ["Tomato", "Target Spot"],
+      hi: ["टमाटर", "टार्गेट स्पॉट"],
+      mr: ["टोमॅटो", "टार्गेट स्पॉट"],
+    },
+
+    Tomato_Mosaic_Virus: {
+      en: ["Tomato", "Mosaic Virus"],
+      hi: ["टमाटर", "मोज़ेक वायरस"],
+      mr: ["टोमॅटो", "मोझॅक विषाणू"],
+    },
+
+    Tomato_Healthy: {
+      en: ["Tomato", "Healthy"],
+      hi: ["टमाटर", "स्वस्थ"],
+      mr: ["टोमॅटो", "निरोगी"],
+    },
+
+    Maize_Cercospora_Gray_Leaf_Spot: {
+      en: ["Maize", "Cercospora and Gray Leaf Spot"],
+      hi: ["मक्का", "सर्कोस्पोरा और ग्रे लीफ स्पॉट"],
+      mr: ["मका", "सर्कोस्पोरा आणि ग्रे लीफ स्पॉट"],
+    },
+
+    Maize_Common_Rust: {
+      en: ["Maize", "Common Rust"],
+      hi: ["मक्का", "कॉमन रस्ट"],
+      mr: ["मका", "कॉमन रस्ट"],
+    },
+
+    Maize_Northern_Leaf_Blight: {
+      en: ["Maize", "Northern Leaf Blight"],
+      hi: ["मक्का", "नॉर्दर्न लीफ ब्लाइट"],
+      mr: ["मका", "नॉर्दर्न लीफ ब्लाइट"],
+    },
+
+    Maize_Healthy: {
+      en: ["Maize", "Healthy"],
+      hi: ["मक्का", "स्वस्थ"],
+      mr: ["मका", "निरोगी"],
+    },
+
+    Potato_Early_Blight: {
+      en: ["Potato", "Early Blight"],
+      hi: ["आलू", "अगेती झुलसा"],
+      mr: ["बटाटा", "लवकर करपा"],
+    },
+
+    Potato_Late_Blight: {
+      en: ["Potato", "Late Blight"],
+      hi: ["आलू", "पछेती झुलसा"],
+      mr: ["बटाटा", "उशिरा करपा"],
+    },
+
+    Potato_Healthy: {
+      en: ["Potato", "Healthy"],
+      hi: ["आलू", "स्वस्थ"],
+      mr: ["बटाटा", "निरोगी"],
+    },
+  };
+
+  const names = fallbackNames[classKey];
+
+  // Completely unknown class
+  if (!names) {
+    return null;
+  }
+
+  const [crop, disease] =
+    names[lang] || names.en;
+
+  const isHealthy =
+    classKey.endsWith("_Healthy");
 
   return {
     classKey,
 
-    crop:
-      profile.crop[lang] ||
-      profile.crop.en,
+    crop,
 
-    disease:
-      profile.disease[lang] ||
-      profile.disease.en,
+    disease,
 
-    severity: profile.severity,
+    severity: isHealthy ? "Low" : "Medium",
 
-    severityPercent:
-      profile.severityPercent,
+    severityPercent: isHealthy ? 8 : 50,
 
     confidence:
       modelConfidence !== null
         ? modelConfidence
-        : profile.confidence,
+        : 0,
 
     recommendation:
-      profile.recommendation[lang] ||
-      profile.recommendation.en,
-      ipm: translateIPM(classKey, lang),
+      isHealthy
+        ? (
+            {
+              en: "No major disease signs detected. Continue regular crop monitoring and maintain good field sanitation.",
+              hi: "रोग के कोई प्रमुख लक्षण नहीं पाए गए। नियमित फसल निगरानी जारी रखें और खेत की स्वच्छता बनाए रखें।",
+              mr: "रोगाची ठळक लक्षणे आढळली नाहीत. नियमित पिकाची पाहणी सुरू ठेवा आणि शेताची स्वच्छता राखा.",
+            }[lang] ||
+            "No major disease signs detected. Continue regular crop monitoring and maintain good field sanitation."
+          )
+        : (
+            {
+              en: "Disease symptoms detected. Inspect the crop closely, remove severely affected plant material where practical, maintain field sanitation, and follow locally approved disease-management guidance if treatment is required.",
+              hi: "रोग के लक्षण पाए गए हैं। फसल की सावधानीपूर्वक जांच करें, जहां संभव हो गंभीर रूप से प्रभावित पौधों के हिस्से हटाएं, खेत की स्वच्छता बनाए रखें और उपचार आवश्यक होने पर स्थानीय रूप से स्वीकृत रोग-प्रबंधन सलाह का पालन करें।",
+              mr: "रोगाची लक्षणे आढळली आहेत. पिकाची काळजीपूर्वक पाहणी करा, शक्य असल्यास जास्त बाधित भाग काढून टाका, शेताची स्वच्छता राखा आणि उपचाराची गरज असल्यास स्थानिक मान्य रोग व्यवस्थापन सल्ल्याचे पालन करा.",
+            }[lang] ||
+            "Disease symptoms detected. Inspect the crop closely, maintain field sanitation, and follow locally approved disease-management guidance."
+          ),
+
+    ipm: null,
   };
 }
 

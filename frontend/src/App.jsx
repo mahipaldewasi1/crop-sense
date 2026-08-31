@@ -10,6 +10,7 @@ import ScanScreen from "./screens/ScanScreen";
 import ResultScreen from "./screens/ResultScreen";
 import StoreScreen from "./screens/StoreScreen";
 import DiseaseMapScreen from "./screens/DiseaseMapScreen";
+import FollowUpMonitoring from "./screens/FollowUpMonitoring";
 
 // Login/register ke bina in screens tak nahi jaane dena
 function ProtectedRoute({ children }) {
@@ -26,7 +27,18 @@ function AppRoutes() {
       <Route path="/result" element={<ProtectedRoute><Layout><ResultScreen /></Layout></ProtectedRoute>} />
       <Route path="/store" element={<ProtectedRoute><Layout><StoreScreen /></Layout></ProtectedRoute>} />
       <Route path="/disease-map" element={<ProtectedRoute><Layout><DiseaseMapScreen /></Layout></ProtectedRoute>} />
+      <Route
+        path="/follow-up"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <FollowUpMonitoring />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
       <Route path="*" element={<Navigate to="/" replace />} />
+  
     </Routes>
   );
 }

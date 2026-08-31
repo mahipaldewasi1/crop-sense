@@ -128,5 +128,182 @@ async function getHistory(req, res) {
     res.status(500).json({ message: "Could not fetch history", error: err.message });
   }
 }
+// POST /api/scan/:scanId/follow-up
+// Start follow-up monitoring for an existing scan.
+async function startFollowUp(req, res) {
+  try {
+    const { scanId } = req.params;
 
-module.exports = { createScan, getHistory };
+    const scan = await Scan.findOne({
+      _id: scanId,
+      user: req.userId,
+    });
+
+    if (!scan) {
+      return res.status(404).json({
+        message: "Scan not found",
+      });
+    }
+
+    // Don't allow multiple active follow-ups
+    if (
+      scan.followUp &&
+      scan.followUp.enabled &&
+      scan.followUp.status === "pending"
+    ) {
+      return res.status(400).json({
+        message: "Follow-up monitoring is already active",
+        followUp: scan.followUp,
+      });
+    }
+
+    // Default: 7 days from now
+    const days = Number(req.body.days) || 7;
+
+    const dueDate = new Date();
+    dueDate.setDate(dueDate.getDate() + days);
+
+    scan.followUp = {
+      enabled: true,
+      dueDate,
+      status: "pending",
+      scans: [],
+    };
+
+    await scan.save();
+
+    res.status(200).json({
+      message: "Follow-up monitoring started",
+      followUp: scan.followUp,
+    });
+  } catch (err) {
+    console.error("========== FOLLOW-UP START ERROR ==========");
+    console.error(err);
+    console.error("===========================================");
+
+    res.status(500).json({
+      message: "Could not start follow-up monitoring",
+      error: err.message,
+    });
+  }
+}
+
+
+// GET /api/scan/follow-ups
+// Get all follow-ups belonging to the logged-in farmer.
+async function getFollowUps(req, res) {
+  try {
+    const scans = await Scan.find({
+      user: req.userId,
+      "followUp.enabled": true,
+    }).sort({
+      "followUp.dueDate": 1,
+    });
+
+    res.json({
+      followUps: scans,
+    });
+  } catch (err) {
+    console.error("FOLLOW-UP FETCH ERROR:", err);
+
+    res.status(500).json({
+      message: "Could not fetch follow-ups",
+      error: err.message,
+    });
+  }
+}
+
+
+// GET /api/scan/:scanId/follow-up
+// Get one follow-up and calculate its current status.
+async function getFollowUp(req, res) {
+  try {
+    const { scanId } = req.params;
+
+    const scan = await Scan.findOne({
+      _id: scanId,
+      user: req.userId,
+    });
+
+    if (!scan) {
+      return res.status(404).json({
+        message: "Scan not found",
+      });
+    }
+
+    if (!scan.followUp || !scan.followUp.enabled) {
+      return res.status(404).json({
+        message: "Follow-up monitoring has not been started",
+      });
+    }
+
+    let comparison = null;
+
+    if (
+      scan.followUp.scans &&
+      scan.followUp.scans.length > 0
+    ) {
+      const latest =
+        scan.followUp.scans[
+          scan.followUp.scans.length - 1
+        ];
+
+      const initialSeverity = scan.severityPercent;
+      const currentSeverity = latest.severityPercent;
+
+      const change =
+        currentSeverity - initialSeverity;
+
+      let status = "stable";
+
+      if (change <= -10) {
+        status = "improving";
+      } else if (change >= 10) {
+        status = "worsening";
+      }
+
+      comparison = {
+        status,
+
+        change,
+
+        initial: {
+          disease: scan.disease,
+          classKey: scan.classKey,
+          severity: scan.severity,
+          severityPercent: initialSeverity,
+          confidence: scan.confidence,
+          date: scan.createdAt,
+        },
+
+        current: {
+          disease: latest.disease,
+          classKey: latest.classKey,
+          severity: latest.severity,
+          severityPercent: currentSeverity,
+          confidence: latest.confidence,
+          date: latest.date,
+        },
+      };
+    }
+
+    res.json({
+      followUp: scan.followUp,
+      comparison,
+    });
+  } catch (err) {
+    console.error("FOLLOW-UP DETAIL ERROR:", err);
+
+    res.status(500).json({
+      message: "Could not fetch follow-up",
+      error: err.message,
+    });
+  }
+}
+module.exports = {
+  createScan,
+  getHistory,
+  startFollowUp,
+  getFollowUps,
+  getFollowUp,
+};
