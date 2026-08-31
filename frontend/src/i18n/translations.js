@@ -1,6 +1,6 @@
 export const translations = {
   en: {
-    appName: "CropSense",
+    appName: "FasalSaathi",
     tagline: "Instantly identify crop disease, get the right treatment.",
     login: "Login",
     register: "Register",
@@ -74,7 +74,7 @@ export const translations = {
     locationNeeded: "Location access needed for nearby stores",
   },
   hi: {
-    appName: "CropSense",
+    appName: "फसल साथी",
     tagline: "फसल की बीमारी तुरंत पहचानें, सही इलाज पाएं।",
     login: "लॉगिन",
     register: "रजिस्टर करें",
@@ -148,7 +148,7 @@ export const translations = {
     locationNeeded: "नज़दीकी दुकानों के लिए स्थान की अनुमति चाहिए",
   },
   mr: {
-    appName: "CropSense",
+    appName: "फसल साथी",
     tagline: "पिकाचा आजार लगेच ओळखा, योग्य उपचार मिळवा.",
     login: "लॉगिन",
     register: "नोंदणी करा",
