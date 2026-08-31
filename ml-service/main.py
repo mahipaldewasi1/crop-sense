@@ -104,14 +104,55 @@ INPUT_NAME = session.get_inputs()[0].name
 print(f"FasalSaathi ONNX model ready. Input: {INPUT_NAME}")
 
 def preprocess(image: Image.Image) -> np.ndarray:
-    # Keep the same preprocessing used by the existing deployed main.py:
-    # resize to 224x224 and ImageNet normalization.
-    image = image.resize((224, 224), Image.Resampling.BILINEAR)
+    # Match the Hugging Face model's preprocessing:
+    # 1. Resize shortest edge to 256
+    # 2. Center crop to 224x224
+    # 3. Normalize using mean/std = 0.5
+    image = image.convert("RGB")
+
+    width, height = image.size
+
+    # Resize shortest side to 256 while preserving aspect ratio
+    if width < height:
+        new_width = 256
+        new_height = int(height * 256 / width)
+    else:
+        new_height = 256
+        new_width = int(width * 256 / height)
+
+    image = image.resize(
+        (new_width, new_height),
+        Image.Resampling.BILINEAR
+    )
+
+    # Center crop to 224x224
+    left = (new_width - 224) // 2
+    top = (new_height - 224) // 2
+    right = left + 224
+    bottom = top + 224
+
+    image = image.crop((left, top, right, bottom))
+
+    # Convert to [0, 1]
     array = np.asarray(image, dtype=np.float32) / 255.0
-    mean = np.array([0.485, 0.456, 0.406], dtype=np.float32)
-    std = np.array([0.229, 0.224, 0.225], dtype=np.float32)
+
+    # Hugging Face model uses mean/std = 0.5
+    mean = np.array(
+        [0.5, 0.5, 0.5],
+        dtype=np.float32
+    )
+
+    std = np.array(
+        [0.5, 0.5, 0.5],
+        dtype=np.float32
+    )
+
     array = (array - mean) / std
+
+    # HWC -> CHW
     array = np.transpose(array, (2, 0, 1))
+
+    # Add batch dimension
     return np.expand_dims(array, axis=0).astype(np.float32)
 
 def softmax(values):
