@@ -1,40 +1,35 @@
 from fastapi import FastAPI, File, Form, UploadFile, HTTPException
 from PIL import Image
-from transformers import AutoModelForImageClassification
-from torchvision import transforms
+from transformers import AutoImageProcessor
+from optimum.onnxruntime import ORTModelForImageClassification
 
 import torch
 import io
+import os
 
 app = FastAPI(title="CropSense ML Service")
 
 MODEL_ID = "linkanjarad/mobilenet_v2_1.0_224-plant-disease-identification"
-
-
-
-
-# ---------------------------------------------------------
-# LOAD MODEL ONCE AT STARTUP
-# ---------------------------------------------------------
-
-model = AutoModelForImageClassification.from_pretrained(MODEL_ID)
-model.eval()
+ONNX_DIR = "onnx_model"
 
 
 # ---------------------------------------------------------
-# IMAGE PREPROCESSING
+# LOAD / EXPORT MODEL ONCE AT STARTUP
 # ---------------------------------------------------------
+# If the ONNX version doesn't exist on disk yet, export it from the
+# original HF checkpoint the first time the service starts, then
+# reuse the cached ONNX files on every subsequent boot.
 
-transform = transforms.Compose(
-    [
-        transforms.Resize((224, 224)),
-        transforms.ToTensor(),
-        transforms.Normalize(
-            mean=[0.485, 0.456, 0.406],
-            std=[0.229, 0.224, 0.225],
-        ),
-    ]
-)
+if not os.path.exists(ONNX_DIR):
+    model = ORTModelForImageClassification.from_pretrained(MODEL_ID, export=True)
+    model.save_pretrained(ONNX_DIR)
+
+    processor = AutoImageProcessor.from_pretrained(MODEL_ID)
+    processor.save_pretrained(ONNX_DIR)
+else:
+    model = ORTModelForImageClassification.from_pretrained(ONNX_DIR)
+
+processor = AutoImageProcessor.from_pretrained(ONNX_DIR)
 
 
 # ---------------------------------------------------------
@@ -127,12 +122,13 @@ async def predict(
             io.BytesIO(image_bytes)
         ).convert("RGB")
 
-        # 4. Preprocess
-        image_tensor = transform(image).unsqueeze(0)
+        # 4. Preprocess using the model's OWN processor config
+        #    (correct resize + normalization for this exact checkpoint,
+        #    instead of hardcoded ImageNet mean/std)
+        inputs = processor(images=image, return_tensors="pt")
 
-        # 5. Run model
-        with torch.no_grad():
-            outputs = model(pixel_values=image_tensor)
+        # 5. Run model (ONNX Runtime under the hood, no torch training graph)
+        outputs = model(**inputs)
 
         logits = outputs.logits[0]
 

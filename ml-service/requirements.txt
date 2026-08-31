@@ -1,6 +1,7 @@
 fastapi
-uvicorn
+uvicorn[standard]
 python-multipart
+optimum[onnxruntime]
+transformers
 pillow
-numpy
-onnxruntime==1.29.0
+torch
