@@ -3,4 +3,4 @@ uvicorn
 python-multipart
 pillow
 numpy
-onnxruntime==1.22.0
+onnxruntime==1.29.0
