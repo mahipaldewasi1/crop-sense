@@ -5,7 +5,17 @@ import onnxruntime as ort
 import io
 import os
 import urllib.request
+import hashlib
+import tempfile
 
+def file_hash(path):
+    sha256 = hashlib.sha256()
+
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(1024 * 1024), b""):
+            sha256.update(chunk)
+
+    return sha256.hexdigest()
 app = FastAPI(title="FasalSaathi ML Service")
 
 # Same fine-tuned MobileNetV2 model, but served as a small ONNX model
@@ -15,7 +25,10 @@ MODEL_URL = (
     "mobilenet_v2_1.0_224-plant-disease-identification-ONNX/"
     "resolve/main/onnx/model_int8.onnx"
 )
-MODEL_PATH = os.path.join("/tmp", "fasalsaathi_mobilenet_v2_int8.onnx")
+MODEL_PATH = os.path.join(
+    tempfile.gettempdir(),
+    "fasalsaathi_mobilenet_v2_int8.onnx"
+)
 
 CROP_LABELS = {
     "tomato": [
@@ -102,6 +115,8 @@ session = ort.InferenceSession(
 
 INPUT_NAME = session.get_inputs()[0].name
 print(f"FasalSaathi ONNX model ready. Input: {INPUT_NAME}")
+print(f"MODEL PATH: {MODEL_PATH}")
+print(f"MODEL SHA256: {file_hash(MODEL_PATH)}")
 
 def preprocess(image: Image.Image) -> np.ndarray:
     # Match the Hugging Face model's preprocessing:
