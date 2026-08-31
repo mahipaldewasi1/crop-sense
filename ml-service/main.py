@@ -1,45 +1,21 @@
 from fastapi import FastAPI, File, Form, UploadFile, HTTPException
 from PIL import Image
-from transformers import AutoModelForImageClassification
-from torchvision import transforms
-
-import torch
+import numpy as np
+import onnxruntime as ort
 import io
+import os
+import urllib.request
 
+app = FastAPI(title="FasalSaathi ML Service")
 
-app = FastAPI(title="CropSense ML Service")
-
-
-MODEL_ID = "linkanjarad/mobilenet_v2_1.0_224-plant-disease-identification"
-
-
-# ---------------------------------------------------------
-# LOAD MODEL ONCE AT STARTUP
-# ---------------------------------------------------------
-
-model = AutoModelForImageClassification.from_pretrained(MODEL_ID)
-model.eval()
-
-
-# ---------------------------------------------------------
-# IMAGE PREPROCESSING
-# ---------------------------------------------------------
-
-transform = transforms.Compose(
-    [
-        transforms.Resize((224, 224)),
-        transforms.ToTensor(),
-        transforms.Normalize(
-            mean=[0.485, 0.456, 0.406],
-            std=[0.229, 0.224, 0.225],
-        ),
-    ]
+# Same fine-tuned MobileNetV2 model, but served as a small ONNX model
+# instead of loading PyTorch + Transformers.
+MODEL_URL = (
+    "https://huggingface.co/onnx-community/"
+    "mobilenet_v2_1.0_224-plant-disease-identification-ONNX/"
+    "resolve/main/onnx/model_int8.onnx"
 )
-
-
-# ---------------------------------------------------------
-# CROP -> MODEL LABELS
-# ---------------------------------------------------------
+MODEL_PATH = os.path.join("/tmp", "fasalsaathi_mobilenet_v2_int8.onnx")
 
 CROP_LABELS = {
     "tomato": [
@@ -54,13 +30,11 @@ CROP_LABELS = {
         "Tomato Mosaic Virus",
         "Healthy Tomato Plant",
     ],
-
     "potato": [
         "Potato with Early Blight",
         "Potato with Late Blight",
         "Healthy Potato Plant",
     ],
-
     "maize": [
         "Corn (Maize) with Cercospora and Gray Leaf Spot",
         "Corn (Maize) with Common Rust",
@@ -69,34 +43,96 @@ CROP_LABELS = {
     ],
 }
 
+ID2LABEL = [
+    "Apple Scab",
+    "Apple with Black Rot",
+    "Cedar Apple Rust",
+    "Healthy Apple",
+    "Healthy Blueberry Plant",
+    "Cherry with Powdery Mildew",
+    "Healthy Cherry Plant",
+    "Corn (Maize) with Cercospora and Gray Leaf Spot",
+    "Corn (Maize) with Common Rust",
+    "Corn (Maize) with Northern Leaf Blight",
+    "Healthy Corn (Maize) Plant",
+    "Grape with Black Rot",
+    "Grape with Esca (Black Measles)",
+    "Grape with Isariopsis Leaf Spot",
+    "Healthy Grape Plant",
+    "Orange with Citrus Greening",
+    "Peach with Bacterial Spot",
+    "Healthy Peach Plant",
+    "Bell Pepper with Bacterial Spot",
+    "Healthy Bell Pepper Plant",
+    "Potato with Early Blight",
+    "Potato with Late Blight",
+    "Healthy Potato Plant",
+    "Healthy Raspberry Plant",
+    "Healthy Soybean Plant",
+    "Squash with Powdery Mildew",
+    "Strawberry with Leaf Scorch",
+    "Healthy Strawberry Plant",
+    "Tomato with Bacterial Spot",
+    "Tomato with Early Blight",
+    "Tomato with Late Blight",
+    "Tomato with Leaf Mold",
+    "Tomato with Septoria Leaf Spot",
+    "Tomato with Spider Mites or Two-spotted Spider Mite",
+    "Tomato with Target Spot",
+    "Tomato Yellow Leaf Curl Virus",
+    "Tomato Mosaic Virus",
+    "Healthy Tomato Plant",
+]
 
 def normalize_crop(value: str) -> str:
     return value.strip().lower()
 
+def ensure_model():
+    if not os.path.exists(MODEL_PATH):
+        print("Downloading lightweight ONNX model...")
+        urllib.request.urlretrieve(MODEL_URL, MODEL_PATH)
+        print("ONNX model downloaded.")
+    return MODEL_PATH
 
-# ---------------------------------------------------------
-# BASIC ROUTES
-# ---------------------------------------------------------
+# Load the ONNX model once. This avoids PyTorch/Transformers memory usage.
+session = ort.InferenceSession(
+    ensure_model(),
+    providers=["CPUExecutionProvider"],
+)
+
+INPUT_NAME = session.get_inputs()[0].name
+print(f"FasalSaathi ONNX model ready. Input: {INPUT_NAME}")
+
+def preprocess(image: Image.Image) -> np.ndarray:
+    # Keep the same preprocessing used by the existing deployed main.py:
+    # resize to 224x224 and ImageNet normalization.
+    image = image.resize((224, 224), Image.Resampling.BILINEAR)
+    array = np.asarray(image, dtype=np.float32) / 255.0
+    mean = np.array([0.485, 0.456, 0.406], dtype=np.float32)
+    std = np.array([0.229, 0.224, 0.225], dtype=np.float32)
+    array = (array - mean) / std
+    array = np.transpose(array, (2, 0, 1))
+    return np.expand_dims(array, axis=0).astype(np.float32)
+
+def softmax(values):
+    values = np.asarray(values, dtype=np.float32)
+    values = values - np.max(values)
+    exp_values = np.exp(values)
+    return exp_values / np.sum(exp_values)
 
 @app.get("/")
 def root():
     return {
-        "status": "CropSense ML service running",
-        "model": MODEL_ID,
+        "status": "FasalSaathi ML service running",
+        "model": "MobileNetV2 ONNX INT8",
     }
-
 
 @app.get("/health")
 def health():
     return {
         "status": "healthy",
-        "model": MODEL_ID,
+        "model": "MobileNetV2 ONNX INT8",
     }
-
-
-# ---------------------------------------------------------
-# PREDICTION
-# ---------------------------------------------------------
 
 @app.post("/predict")
 async def predict(
@@ -104,7 +140,6 @@ async def predict(
     crop: str = Form("tomato"),
 ):
     try:
-        # 1. Validate crop
         crop_key = normalize_crop(crop)
 
         if crop_key not in CROP_LABELS:
@@ -113,7 +148,6 @@ async def predict(
                 detail=f"Unsupported crop: {crop}",
             )
 
-        # 2. Read image
         image_bytes = await file.read()
 
         if not image_bytes:
@@ -122,89 +156,57 @@ async def predict(
                 detail="Empty image",
             )
 
-        # 3. Open image
-        image = Image.open(
-            io.BytesIO(image_bytes)
-        ).convert("RGB")
+        image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+        image_tensor = preprocess(image)
 
-        # 4. Preprocess
-        image_tensor = transform(image).unsqueeze(0)
+        outputs = session.run(None, {INPUT_NAME: image_tensor})
+        logits = np.asarray(outputs[0][0], dtype=np.float32)
 
-        # 5. Run model
-        with torch.no_grad():
-            outputs = model(pixel_values=image_tensor)
-
-        logits = outputs.logits[0]
-
-        # 6. Get classes belonging to selected crop
         allowed_labels = set(CROP_LABELS[crop_key])
-
         crop_items = []
 
-        for index, logit in enumerate(logits.tolist()):
-            label = model.config.id2label[index]
-
+        for index, logit in enumerate(logits):
+            label = ID2LABEL[index]
             if label in allowed_labels:
-                crop_items.append(
-                    {
-                        "label": label,
-                        "logit": logit,
-                        "index": index,
-                    }
-                )
+                crop_items.append({
+                    "label": label,
+                    "logit": float(logit),
+                    "index": index,
+                })
 
-        # 7. Make sure we found crop classes
         if not crop_items:
             raise HTTPException(
                 status_code=500,
                 detail="No classes found for selected crop",
             )
 
-        # 8. Softmax only across selected crop classes
-        crop_logits = torch.tensor(
-            [item["logit"] for item in crop_items]
+        crop_logits = np.array(
+            [item["logit"] for item in crop_items],
+            dtype=np.float32,
         )
-
-        crop_probabilities = torch.softmax(
-            crop_logits,
-            dim=0,
-        )
+        crop_probabilities = softmax(crop_logits)
 
         crop_results = []
+        for item, probability in zip(crop_items, crop_probabilities):
+            crop_results.append({
+                "label": item["label"],
+                "score": float(probability),
+            })
 
-        for item, probability in zip(
-            crop_items,
-            crop_probabilities.tolist(),
-        ):
-            crop_results.append(
-                {
-                    "label": item["label"],
-                    "score": probability,
-                }
-            )
-
-        # 9. Pick best prediction
         best = max(
             crop_results,
             key=lambda item: item["score"],
         )
 
-        # 10. Return result
         return {
             "status": "success",
             "crop": crop_key,
             "disease": best["label"],
-            "confidence": round(
-                best["score"] * 100,
-                2,
-            ),
+            "confidence": round(best["score"] * 100, 2),
             "top_predictions": [
                 {
                     "label": item["label"],
-                    "confidence": round(
-                        item["score"] * 100,
-                        2,
-                    ),
+                    "confidence": round(item["score"] * 100, 2),
                 }
                 for item in sorted(
                     crop_results,
@@ -216,8 +218,8 @@ async def predict(
 
     except HTTPException:
         raise
-
     except Exception as exc:
+        print(f"Prediction error: {exc}")
         raise HTTPException(
             status_code=500,
             detail=str(exc),
