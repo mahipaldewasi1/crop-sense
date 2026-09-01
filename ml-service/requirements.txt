@@ -4,4 +4,4 @@ python-multipart
 optimum[onnxruntime]
 transformers
 pillow
-torch
+numpy

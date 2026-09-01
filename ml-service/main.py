@@ -3,9 +3,8 @@ from PIL import Image
 from transformers import AutoImageProcessor
 from optimum.onnxruntime import ORTModelForImageClassification
 
-import torch
+import numpy as np
 import io
-import os
 
 app = FastAPI(title="CropSense ML Service")
 
@@ -14,21 +13,14 @@ ONNX_DIR = "onnx_model"
 
 
 # ---------------------------------------------------------
-# LOAD / EXPORT MODEL ONCE AT STARTUP
+# LOAD PRE-EXPORTED MODEL AT STARTUP
 # ---------------------------------------------------------
-# If the ONNX version doesn't exist on disk yet, export it from the
-# original HF checkpoint the first time the service starts, then
-# reuse the cached ONNX files on every subsequent boot.
+# The onnx_model/ folder is committed to the repo (produced once by
+# export_model.py on your local machine). This means startup here is
+# just loading files off disk — no Hugging Face download, no ONNX
+# export, and no torch dependency needed in production at all.
 
-if not os.path.exists(ONNX_DIR):
-    model = ORTModelForImageClassification.from_pretrained(MODEL_ID, export=True)
-    model.save_pretrained(ONNX_DIR)
-
-    processor = AutoImageProcessor.from_pretrained(MODEL_ID)
-    processor.save_pretrained(ONNX_DIR)
-else:
-    model = ORTModelForImageClassification.from_pretrained(ONNX_DIR)
-
+model = ORTModelForImageClassification.from_pretrained(ONNX_DIR)
 processor = AutoImageProcessor.from_pretrained(ONNX_DIR)
 
 
@@ -67,6 +59,12 @@ CROP_LABELS = {
 
 def normalize_crop(value: str) -> str:
     return value.strip().lower()
+
+
+def softmax(values):
+    arr = np.array(values, dtype=np.float64)
+    exp = np.exp(arr - np.max(arr))
+    return exp / exp.sum()
 
 
 # ---------------------------------------------------------
@@ -122,12 +120,10 @@ async def predict(
             io.BytesIO(image_bytes)
         ).convert("RGB")
 
-        # 4. Preprocess using the model's OWN processor config
-        #    (correct resize + normalization for this exact checkpoint,
-        #    instead of hardcoded ImageNet mean/std)
-        inputs = processor(images=image, return_tensors="pt")
+        # 4. Preprocess using the model's own processor config
+        inputs = processor(images=image, return_tensors="np")
 
-        # 5. Run model (ONNX Runtime under the hood, no torch training graph)
+        # 5. Run model (ONNX Runtime, no torch needed at all)
         outputs = model(**inputs)
 
         logits = outputs.logits[0]
@@ -156,15 +152,9 @@ async def predict(
                 detail="No classes found for selected crop",
             )
 
-        # 8. Softmax only across selected crop classes
-        crop_logits = torch.tensor(
-            [item["logit"] for item in crop_items]
-        )
-
-        crop_probabilities = torch.softmax(
-            crop_logits,
-            dim=0,
-        )
+        # 8. Softmax only across selected crop classes (plain numpy now, no torch)
+        crop_logits = [item["logit"] for item in crop_items]
+        crop_probabilities = softmax(crop_logits)
 
         crop_results = []
 
