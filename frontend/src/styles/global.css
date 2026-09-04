@@ -1,79 +1,363 @@
-/* Global reset + default typography.
-   This is what was missing: without a font-family on `body`,
-   any element that doesn't set one inline falls back to the
-   browser's default serif — which is why plain <p> text was
-   rendering serif everywhere despite Inter being loaded. */
+:root {
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+
+  color: #183d30;
+  background: #f5f3eb;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+
+  --green: #183d30;
+  --green-light: #e6f0e3;
+  --cream: #f5f3eb;
+  --border: #dddcd2;
+  --text: #183d30;
+  --muted: #6d746c;
+  --orange: #df9626;
+  --danger: #c95c3b;
+}
 
 * {
   box-sizing: border-box;
 }
 
-html, body {
+html,
+body,
+#root {
+  width: 100%;
+  min-height: 100%;
   margin: 0;
-  padding: 0;
 }
 
 body {
-  font-family: 'Inter', sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  min-width: 320px;
+  background: var(--cream);
+  color: var(--text);
+  overflow-x: hidden;
 }
 
-/* Form elements don't inherit the body font by default in most
-   browsers — buttons/selects can silently fall back to serif too. */
-button, input, select, textarea {
-  font-family: inherit;
-}
-
-a {
-  color: inherit;
-}
-
-/* Smooth, deliberate motion on anything interactive — the single biggest
-   thing separating "coded" from "designed". Kept short (160ms) so it reads
-   as responsive, not sluggish. */
-button, a, input, select, textarea, .cs-nav-item {
-  transition: background-color 0.16s ease, border-color 0.16s ease,
-              color 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease,
-              opacity 0.16s ease;
+button,
+input,
+select,
+textarea {
+  font: inherit;
 }
 
 button {
-  font-family: inherit;
+  cursor: pointer;
 }
 
-/* Consistent, visible keyboard focus ring across the app instead of the
-   browser default (or nothing, on custom divs-as-buttons). */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* =========================================================
+   GLOBAL RESPONSIVE SAFETY
+   ========================================================= */
+
+#root,
+.app,
+.page,
+main,
+section,
+header,
+nav {
+  max-width: 100%;
+}
+
+table {
+  max-width: 100%;
+}
+
+@media (max-width: 768px) {
+  body {
+    overflow-x: hidden;
+  }
+
+  .desktop-only {
+    display: none !important;
+  }
+
+  .mobile-only {
+    display: flex !important;
+  }
+}
+
+@media (min-width: 769px) {
+  .mobile-only {
+    display: none !important;
+  }
+}
+
+/* =========================================================
+   EXPERT PORTAL MOBILE FIXES
+   ========================================================= */
+
+.expert-dashboard,
+.expert-case-page {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* Header */
+
+.expert-header {
+  width: 100%;
+  min-width: 0;
+}
+
+.expert-header-inner {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+}
+
+/* Dashboard content */
+
+.expert-content {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.expert-stats-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.expert-stat-card {
+  min-width: 0;
+  width: 100%;
+}
+
+.expert-cases-grid {
+  width: 100%;
+  min-width: 0;
+}
+
+/* Search / filters */
+
+.expert-search-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+}
+
+.expert-search-row input {
+  min-width: 0;
+  width: 100%;
+}
+
+/* =========================================================
+   TABLET
+   ========================================================= */
+
+@media (max-width: 1024px) {
+  .expert-stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* =========================================================
+   PHONE
+   ========================================================= */
+
+@media (max-width: 768px) {
+  .expert-dashboard,
+  .expert-case-page {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .expert-content {
+    width: 100%;
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+
+  .expert-stats-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .expert-stat-card {
+    min-height: 110px;
+  }
+
+  .expert-search-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .expert-search-row > * {
+    width: 100%;
+  }
+
+  /* Cards */
+
+  .expert-card,
+  .case-card,
+  .profile-card,
+  .overview-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  /* Prevent long text from expanding page */
+
+  .expert-dashboard *,
+  .expert-case-page * {
+    max-width: 100%;
+  }
+
+  .expert-dashboard h1,
+  .expert-dashboard h2,
+  .expert-dashboard h3,
+  .expert-dashboard p,
+  .expert-case-page h1,
+  .expert-case-page h2,
+  .expert-case-page h3,
+  .expert-case-page p {
+    overflow-wrap: anywhere;
+  }
+
+  /* Buttons */
+
+  .expert-dashboard button,
+  .expert-case-page button {
+    max-width: 100%;
+  }
+
+  /* Case layout */
+
+  .case-grid,
+  .cases-grid,
+  .expert-cases-grid {
+    grid-template-columns: 1fr !important;
+    display: grid !important;
+  }
+
+  /* Case details */
+
+  .case-details-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Profile */
+
+  .expert-profile-card {
+    width: 100% !important;
+    margin: 0 !important;
+  }
+
+  /* Modal */
+
+  .expert-modal,
+  .case-modal {
+    width: calc(100vw - 24px) !important;
+    max-width: calc(100vw - 24px) !important;
+    max-height: calc(100vh - 24px);
+    overflow-y: auto;
+    margin: 12px;
+  }
+
+  /* Notification */
+
+  .notification-dropdown {
+    position: fixed !important;
+    top: 72px !important;
+    left: 12px !important;
+    right: 12px !important;
+    width: auto !important;
+    max-width: none !important;
+  }
+}
+
+/* =========================================================
+   SMALL PHONES
+   ========================================================= */
+
+@media (max-width: 480px) {
+  .expert-content {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+
+  .expert-stat-card {
+    padding: 16px !important;
+  }
+
+  .expert-stat-card h3 {
+    font-size: 14px;
+  }
+
+  .expert-stat-card .stat-number {
+    font-size: 28px;
+  }
+
+  .expert-dashboard h1 {
+    font-size: 32px !important;
+    line-height: 1.1 !important;
+  }
+
+  .expert-dashboard h2 {
+    font-size: 24px !important;
+  }
+
+  .expert-case-page h1 {
+    font-size: 28px !important;
+  }
+
+  .case-card {
+    padding: 14px !important;
+  }
+
+  .case-card-actions {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .case-card-actions button {
+    width: 100% !important;
+  }
+}
+
+/* =========================================================
+   SAFE FLEX BEHAVIOUR
+   ========================================================= */
+
+.flex-safe {
+  min-width: 0;
+}
+
+.flex-safe > * {
+  min-width: 0;
+}
+
+/* Horizontal scrolling areas should be explicit only */
+.horizontal-scroll {
+  overflow-x: auto;
+  max-width: 100%;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* =========================================================
+   ACCESSIBILITY
+   ========================================================= */
+
 button:focus-visible,
-a:focus-visible,
 input:focus-visible,
-[tabindex]:focus-visible {
-  outline: 2px solid #E0942C;
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid rgba(223, 150, 38, 0.45);
   outline-offset: 2px;
-  border-radius: 6px;
 }
-
-::selection {
-  background: #E0942C;
-  color: #15281F;
-}
-
-/* Custom scrollbar so it matches the palette instead of the OS default. */
-::-webkit-scrollbar { width: 10px; height: 10px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb {
-  background: #D9D6C7;
-  border-radius: 8px;
-  border: 2px solid #F4F3EC;
-}
-::-webkit-scrollbar-thumb:hover { background: #C4C0AC; }
-
-input::placeholder, textarea::placeholder {
-  color: #9AA294;
-}
-
-@keyframes cs-fade-up {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-.cs-animate-in { animation: cs-fade-up 0.35s ease both; }

@@ -1,45 +1,102 @@
 /**
  * Saare backend calls yahan ek jagah rakhe hain.
- * Screens directly fetch() nahi karte - wo in functions ko call karte hain.
- * Fayda: kal agar API URL, auth header logic, ya error handling badalni ho,
- * to sirf yahi file touch karni padegi, har screen nahi.
+ *
+ * Screens directly fetch() nahi karte.
+ * Wo in functions ko call karte hain.
+ *
+ * Fayda:
+ * Kal agar API URL, auth header logic,
+ * ya error handling badalni ho,
+ * to sirf yahi file touch karni padegi.
  */
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+const API_URL =
+  import.meta.env.VITE_API_URL ||
+  "http://localhost:5000/api";
+
+/* ==========================================
+   AUTH
+========================================== */
 
 function getToken() {
   return localStorage.getItem("cropsense_token");
 }
 
+
+/* ==========================================
+   RESPONSE HANDLER
+========================================== */
+
 async function handleResponse(res) {
   const data = await res.json().catch(() => ({}));
+
   if (!res.ok) {
-  throw new Error(
-    data.message ||
-    data.detail ||
-    "Something went wrong"
-  );
-}
+    throw new Error(
+      data.message ||
+        data.detail ||
+        "Something went wrong"
+    );
+  }
+
   return data;
 }
 
-export async function registerUser({ name, phone, password, location }) {
-  const res = await fetch(`${API_URL}/auth/register`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name, phone, password, location }),
-  });
+
+/* ==========================================
+   USER AUTH
+========================================== */
+
+export async function registerUser({
+  name,
+  phone,
+  password,
+  location,
+}) {
+  const res = await fetch(
+    `${API_URL}/auth/register`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        name,
+        phone,
+        password,
+        location,
+      }),
+    }
+  );
+
   return handleResponse(res);
 }
 
-export async function loginUser({ phone, password }) {
-  const res = await fetch(`${API_URL}/auth/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ phone, password }),
-  });
+
+export async function loginUser({
+  phone,
+  password,
+}) {
+  const res = await fetch(
+    `${API_URL}/auth/login`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        phone,
+        password,
+      }),
+    }
+  );
+
   return handleResponse(res);
 }
+
+
+/* ==========================================
+   CROP SCAN
+========================================== */
 
 export async function uploadScan(
   imageFile,
@@ -52,47 +109,90 @@ export async function uploadScan(
   formData.append("lang", lang);
   formData.append("crop", crop);
 
-  const res = await fetch(`${API_URL}/scan`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${getToken()}`,
-    },
-    body: formData,
-  });
+  const res = await fetch(
+    `${API_URL}/scan`,
+    {
+      method: "POST",
+      headers: {
+        Authorization:
+          `Bearer ${getToken()}`,
+      },
+      body: formData,
+    }
+  );
 
   return handleResponse(res);
 }
 
-export async function getScanHistory(lang = "en") {
-  const res = await fetch(`${API_URL}/scan/history?lang=${lang}`, {
-    headers: { Authorization: `Bearer ${getToken()}` },
-  });
+
+/* ==========================================
+   SCAN HISTORY
+========================================== */
+
+export async function getScanHistory(
+  lang = "en"
+) {
+  const res = await fetch(
+    `${API_URL}/scan/history?lang=${lang}`,
+    {
+      headers: {
+        Authorization:
+          `Bearer ${getToken()}`,
+      },
+    }
+  );
+
   return handleResponse(res);
 }
+
+
+/* ==========================================
+   MONITORING
+========================================== */
+
 export async function getMonitoring() {
-  const res = await fetch(`${API_URL}/scan/follow-ups`, {
-    headers: {
-      Authorization: `Bearer ${getToken()}`,
-    },
-  });
+  const res = await fetch(
+    `${API_URL}/scan/follow-ups`,
+    {
+      headers: {
+        Authorization:
+          `Bearer ${getToken()}`,
+      },
+    }
+  );
 
   return handleResponse(res);
 }
-  export async function startFollowUp(scanId) {
-  const res = await fetch(`${API_URL}/scan/${scanId}/follow-up`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${getToken()}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      days: 7,
-    }),
-  });
+
+
+export async function startFollowUp(
+  scanId
+) {
+  const res = await fetch(
+    `${API_URL}/scan/${scanId}/follow-up`,
+    {
+      method: "POST",
+      headers: {
+        Authorization:
+          `Bearer ${getToken()}`,
+        "Content-Type":
+          "application/json",
+      },
+      body: JSON.stringify({
+        days: 7,
+      }),
+    }
+  );
 
   return handleResponse(res);
 }
-export async function uploadFollowUpScan(scanId, imageFile, lang = "en") {
+
+
+export async function uploadFollowUpScan(
+  scanId,
+  imageFile,
+  lang = "en"
+) {
   const formData = new FormData();
 
   formData.append("image", imageFile);
@@ -103,7 +203,8 @@ export async function uploadFollowUpScan(scanId, imageFile, lang = "en") {
     {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${getToken()}`,
+        Authorization:
+          `Bearer ${getToken()}`,
       },
       body: formData,
     }
@@ -112,48 +213,85 @@ export async function uploadFollowUpScan(scanId, imageFile, lang = "en") {
   return handleResponse(res);
 }
 
+
 export async function getFollowUps() {
-  const res = await fetch(`${API_URL}/scan/follow-ups`, {
-    headers: {
-      Authorization: `Bearer ${getToken()}`,
-    },
-  });
-
-  return handleResponse(res);
-}
-
-export async function getFollowUp(id) {
-  const res = await fetch(`${API_URL}/scan/follow-ups/${id}`, {
-    headers: {
-      Authorization: `Bearer ${getToken()}`,
-    },
-  });
-
-  return handleResponse(res);
-}
-// ==========================================
-// REQUEST EXPERT REVIEW
-// ==========================================
-
-export async function requestExpertReview(scanId) {
   const res = await fetch(
-    `${API_URL}/expert/cases/${scanId}/request-review`,
+    `${API_URL}/scan/follow-ups`,
     {
-      method: "POST",
       headers: {
-        Authorization: `Bearer ${getToken()}`,
-        "Content-Type": "application/json",
+        Authorization:
+          `Bearer ${getToken()}`,
       },
     }
   );
 
   return handleResponse(res);
 }
-export async function getNearbyStores(lat, lng) {
-  const res = await fetch(`${API_URL}/stores?lat=${lat}&lng=${lng}`);
+
+
+export async function getFollowUp(id) {
+  const res = await fetch(
+    `${API_URL}/scan/follow-ups/${id}`,
+    {
+      headers: {
+        Authorization:
+          `Bearer ${getToken()}`,
+      },
+    }
+  );
+
   return handleResponse(res);
 }
-export async function getWeather(lat, lng) {
+
+
+/* ==========================================
+   REQUEST EXPERT REVIEW
+========================================== */
+
+export async function requestExpertReview(
+  scanId
+) {
+  const res = await fetch(
+    `${API_URL}/expert/cases/${scanId}/request-review`,
+    {
+      method: "POST",
+      headers: {
+        Authorization:
+          `Bearer ${getToken()}`,
+        "Content-Type":
+          "application/json",
+      },
+    }
+  );
+
+  return handleResponse(res);
+}
+
+
+/* ==========================================
+   STORES
+========================================== */
+
+export async function getNearbyStores(
+  lat,
+  lng
+) {
+  const res = await fetch(
+    `${API_URL}/stores?lat=${lat}&lng=${lng}`
+  );
+
+  return handleResponse(res);
+}
+
+
+/* ==========================================
+   WEATHER
+========================================== */
+
+export async function getWeather(
+  lat,
+  lng
+) {
   const url =
     `https://api.open-meteo.com/v1/forecast` +
     `?latitude=${lat}` +
@@ -167,11 +305,19 @@ export async function getWeather(lat, lng) {
   const res = await fetch(url);
 
   if (!res.ok) {
-    throw new Error("Unable to get weather");
+    throw new Error(
+      "Unable to get weather"
+    );
   }
 
   return res.json();
 }
+
+
+/* ==========================================
+   EXPERT AUTH
+========================================== */
+
 export async function registerExpert({
   name,
   phone,
@@ -180,57 +326,80 @@ export async function registerExpert({
   specialization,
   organization,
 }) {
-  const res = await fetch(`${API_URL}/auth/expert/register`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      name,
-      phone,
-      password,
-      qualification,
-      specialization,
-      organization,
-    }),
-  });
+  const res = await fetch(
+    `${API_URL}/auth/expert/register`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type":
+          "application/json",
+      },
+      body: JSON.stringify({
+        name,
+        phone,
+        password,
+        qualification,
+        specialization,
+        organization,
+      }),
+    }
+  );
 
   return handleResponse(res);
 }
 
 
-export async function loginExpert({ phone, password }) {
-  const res = await fetch(`${API_URL}/auth/expert/login`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      phone,
-      password,
-    }),
-  });
+export async function loginExpert({
+  phone,
+  password,
+}) {
+  const res = await fetch(
+    `${API_URL}/auth/expert/login`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type":
+          "application/json",
+      },
+      body: JSON.stringify({
+        phone,
+        password,
+      }),
+    }
+  );
 
   return handleResponse(res);
 }
+
+
+/* ==========================================
+   EXPERT CASES
+========================================== */
+
 export async function getExpertCases() {
   const res = await fetch(
     `${API_URL}/expert/cases`,
     {
       headers: {
-        Authorization: `Bearer ${getToken()}`,
+        Authorization:
+          `Bearer ${getToken()}`,
       },
     }
   );
 
   return handleResponse(res);
 }
-export async function getExpertCase(scanId) {
+
+
+export async function getExpertCase(
+  scanId
+) {
   const res = await fetch(
     `${API_URL}/expert/cases/${scanId}`,
     {
       headers: {
-        Authorization: `Bearer ${getToken()}`,
+        Authorization:
+          `Bearer ${getToken()}`,
       },
     }
   );
@@ -238,6 +407,10 @@ export async function getExpertCase(scanId) {
   return handleResponse(res);
 }
 
+
+/* ==========================================
+   EXPERT REVIEW
+========================================== */
 
 export async function submitExpertReview(
   scanId,
@@ -247,14 +420,12 @@ export async function submitExpertReview(
     `${API_URL}/expert/cases/${scanId}/review`,
     {
       method: "POST",
-
       headers: {
-        "Content-Type": "application/json",
-
+        "Content-Type":
+          "application/json",
         Authorization:
           `Bearer ${getToken()}`,
       },
-
       body: JSON.stringify({
         advice,
       }),
@@ -263,9 +434,35 @@ export async function submitExpertReview(
 
   return handleResponse(res);
 }
+
+
+/* ==========================================
+   MEDIA URL
+========================================== */
+
+/**
+ * Converts backend image paths into
+ * browser-accessible URLs.
+ *
+ * Examples:
+ *
+ * "/uploads/image.jpg"
+ *     -> "http://localhost:5000/uploads/image.jpg"
+ *
+ * "/api/uploads/image.jpg"
+ *     -> "http://localhost:5000/uploads/image.jpg"
+ *
+ * "uploads/image.jpg"
+ *     -> "http://localhost:5000/uploads/image.jpg"
+ *
+ * "http://localhost:5000/uploads/image.jpg"
+ *     -> unchanged
+ */
+
 export function getMediaUrl(url) {
   if (!url) return "";
 
+  // Already a complete URL
   if (
     url.startsWith("http://") ||
     url.startsWith("https://")
@@ -273,8 +470,20 @@ export function getMediaUrl(url) {
     return url;
   }
 
+  // API_URL = http://localhost:5000/api
+  // We need backend root = http://localhost:5000
   const backendUrl = API_URL.replace(/\/api\/?$/, "");
 
-  return `${backendUrl}${url.startsWith("/") ? url : `/${url}`}`;
+  // Make sure there is exactly one /
+  return `${backendUrl}/${url.replace(/^\/+/, "")}`;
 }
-export { API_URL, getToken };
+
+
+/* ==========================================
+   EXPORTS
+========================================== */
+
+export {
+  API_URL,
+  getToken,
+};
