@@ -85,6 +85,8 @@ scanNearbyCrops: "Scan Nearby Crops",
 nearbyCropScanTitle: "Check Nearby Crops",
 nearbyCropScanDesc:
   "Check a few plants around the affected crop to catch possible spread early.",
+  diseaseGuide: "Disease Guide",
+diseaseGuideDesc: "Explore common crop diseases, symptoms and reference images.",
   },
   hi: {
     appName: "फसल साथी",
@@ -172,6 +174,8 @@ scanNearbyCrops: "आसपास की फसलें स्कैन कर�
 nearbyCropScanTitle: "आसपास की फसलों की जांच करें",
 nearbyCropScanDesc:
   "संभावित फैलाव को जल्दी पकड़ने के लिए प्रभावित फसल के आसपास कुछ पौधों की जांच करें।",
+  diseaseGuide: "रोग मार्गदर्शक",
+diseaseGuideDesc: "सामान्य फसल रोग, लक्षण और संदर्भ चित्र देखें।",
   },
   mr: {
     appName: "फसल साथी",
@@ -259,5 +263,7 @@ scanNearbyCrops: "आसपासची पिके स्कॅन करा",
 nearbyCropScanTitle: "आसपासच्या पिकांची तपासणी करा",
 nearbyCropScanDesc:
   "रोगाचा संभाव्य फैलाव लवकर ओळखण्यासाठी प्रभावित पिकाच्या आसपास काही झाडांची तपासणी करा.",
+  diseaseGuide: "रोग मार्गदर्शक",
+diseaseGuideDesc: "सामान्य पिकांचे रोग, लक्षणे आणि संदर्भ चित्रे पहा.",
   },
 };

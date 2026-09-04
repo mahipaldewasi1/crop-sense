@@ -444,7 +444,7 @@ export default function HomeScreen() {
       }
     }
 
-    return result;
+    return result
   };
 
   const [recent, setRecent] = useState([]);
@@ -907,7 +907,83 @@ export default function HomeScreen() {
               {t("startScan")}
             </div>
           </button>
+{/* Disease Guide */}
+<button
+  type="button"
+  onClick={() => navigate("/disease-guide")}
+  style={{
+    width: "100%",
+    maxWidth: 520,
+    display: "flex",
+    alignItems: "center",
+    gap: 14,
+    marginBottom: 28,
+    padding: "16px 18px",
+    borderRadius: 16,
+    border: `1px solid ${COLORS.line}`,
+    background: COLORS.cream,
+    cursor: "pointer",
+    textAlign: "left",
+    transition: "transform 180ms ease, box-shadow 180ms ease",
+  }}
+  onMouseEnter={(e) => {
+    e.currentTarget.style.transform = "translateY(-2px)";
+    e.currentTarget.style.boxShadow =
+      "0 10px 24px -14px rgba(20,42,31,0.35)";
+  }}
+  onMouseLeave={(e) => {
+    e.currentTarget.style.transform = "translateY(0)";
+    e.currentTarget.style.boxShadow = "none";
+  }}
+>
+  <div
+    style={{
+      width: 42,
+      height: 42,
+      borderRadius: 12,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      background: "#E8F0DD",
+      flexShrink: 0,
+    }}
+  >
+    <Leaf size={20} color={COLORS.forest} />
+  </div>
 
+  <div style={{ flex: 1 }}>
+    <div
+      style={{
+        fontSize: 14,
+        fontWeight: 800,
+        color: COLORS.forest,
+        marginBottom: 3,
+      }}
+    >
+      {t("diseaseGuide")}
+    </div>
+
+    <div
+      style={{
+        fontSize: 12,
+        lineHeight: 1.5,
+        color: COLORS.inkSoft,
+      }}
+    >
+      {t("diseaseGuideDesc")}
+    </div>
+  </div>
+
+  <span
+    style={{
+      fontSize: 18,
+      color: COLORS.forest,
+      flexShrink: 0,
+    }}
+  >
+    →
+  </span>
+</button>
           <p
             style={{
               fontSize: 12.5,
