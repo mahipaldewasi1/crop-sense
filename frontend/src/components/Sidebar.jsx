@@ -116,7 +116,7 @@ const navItems = [
 
         {user?.name && (
           <p style={{ color: "#9CAA8C", fontSize: 12.5, margin: "0 0 18px", paddingLeft: 6 }}>
-            {t("greeting")} <b style={{ color: "#fff" }}>{user.name}</b>
+            {t("greeting")} <b style={{ color: "#fff" }}>{user.name === "Kartik Jain" ? t("Kartik Jain") : user.name}</b>
           </p>
         )}
 

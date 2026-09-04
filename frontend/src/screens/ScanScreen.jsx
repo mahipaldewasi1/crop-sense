@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Leaf, Camera, Image as ImageIcon, RotateCcw } from "lucide-react";
 import { COLORS } from "../styles/theme";
 import TopBar from "../components/TopBar";
@@ -13,12 +13,21 @@ import { useLanguage } from "../i18n/LanguageContext";
 const CROPS = [
   { id: "tomato", key: "cropTomato" },
   { id: "potato", key: "cropPotato" },
-  { id: "maize", key: "cropMaize" },
+  { id: "maize", key: "cropMaize" },  
+  { id: "apple", key: "cropApple" },
+  { id: "cherry", key: "cropCherry" },
+  { id: "grape", key: "cropGrape" },
+  { id: "peach", key: "cropPeach" },
+  { id: "bell_pepper", key: "cropBellPepper" },
 ];
 
 export default function ScanScreen() {
   const { t, lang } = useLanguage();
   const navigate = useNavigate();
+  const { state: scanState } = useLocation();
+
+  const nearbyScan = !!scanState?.nearbyScan;
+  const nearbyCrop = scanState?.nearbyCrop || "tomato";
 
   const cameraInputRef = useRef(null);
   const galleryInputRef = useRef(null);
@@ -26,7 +35,9 @@ export default function ScanScreen() {
   const [preview, setPreview] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [selectedCrop, setSelectedCrop] = useState("tomato");
+  const [selectedCrop, setSelectedCrop] = useState(
+    String(nearbyCrop).toLowerCase().replace(/\s+/g, "_")
+  );
 
   async function handleFile(e) {
     const file = e.target.files?.[0];
@@ -39,15 +50,26 @@ export default function ScanScreen() {
     try {
       const data = await uploadScan(file, lang, selectedCrop);
       navigate("/result", {
-        state: {
-          scan: data.scan,
-          uncertain: data.uncertain || false,
-          message: data.message || "",
-          crop: data.crop || selectedCrop,
-          disease: data.disease || "",
-          confidence: data.confidence ?? null,
-          topPredictions: data.topPredictions || [],
-        },
+state: {
+  scan: data.scan,
+  uncertain: data.uncertain || false,
+  cropMismatch: data.cropMismatch || false,
+
+  message: data.message || "",
+
+  crop: data.crop || selectedCrop,
+  selectedCrop: data.selectedCrop || selectedCrop,
+  detectedCrop: data.detectedCrop || "",
+
+  disease: data.disease || "",
+  confidence: data.confidence ?? null,
+
+  topPredictions: data.topPredictions || [],
+  overallPredictions: data.overallPredictions || [],
+
+  nearbyScan,
+  sourceDisease: scanState?.sourceDisease || "",
+},
       });
     } catch (err) {
       setError(err.message || "Scan failed, try again");
@@ -63,7 +85,60 @@ export default function ScanScreen() {
 
   return (
     <div className="cs-animate-in" style={{ maxWidth: 640, margin: "0 auto", padding: "0 20px 40px" }}>
-      <TopBar title={t("scan")} onBack={() => navigate("/home")} />
+      <TopBar
+        title={nearbyScan ? t("scanNearbyCrops") : t("scan")}
+        onBack={() => navigate("/home")}
+      />
+
+      {nearbyScan && (
+        <div
+          style={{
+            marginBottom: 18,
+            padding: "14px 15px",
+            borderRadius: 14,
+            background: "#EEF6EC",
+            border: `1px solid ${COLORS.line}`,
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "flex-start",
+              gap: 10,
+            }}
+          >
+            <Leaf
+              size={19}
+              color={COLORS.leaf}
+              style={{ flexShrink: 0, marginTop: 1 }}
+            />
+
+            <div>
+              <p
+                style={{
+                  margin: 0,
+                  fontSize: 13,
+                  fontWeight: 800,
+                  color: COLORS.forest,
+                }}
+              >
+                {t("nearbyCropScanTitle")}
+              </p>
+
+              <p
+                style={{
+                  margin: "5px 0 0",
+                  fontSize: 12.5,
+                  lineHeight: 1.55,
+                  color: COLORS.inkSoft,
+                }}
+              >
+                {t("nearbyCropScanDesc")}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Crop selector — chip toggle, matching the login/register tab pattern already used in LoginScreen */}
       <div style={{ marginBottom: 18 }}>

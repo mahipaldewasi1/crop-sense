@@ -29,6 +29,48 @@ processor = AutoImageProcessor.from_pretrained(ONNX_DIR)
 # ---------------------------------------------------------
 
 CROP_LABELS = {
+    "apple": [
+        "Apple Scab",
+        "Apple with Black Rot",
+        "Cedar Apple Rust",
+        "Healthy Apple",
+    ],
+
+    "cherry": [
+        "Cherry with Powdery Mildew",
+        "Healthy Cherry Plant",
+    ],
+
+    "maize": [
+        "Corn (Maize) with Cercospora and Gray Leaf Spot",
+        "Corn (Maize) with Common Rust",
+        "Corn (Maize) with Northern Leaf Blight",
+        "Healthy Corn (Maize) Plant",
+    ],
+
+    "grape": [
+        "Grape with Black Rot",
+        "Grape with Esca (Black Measles)",
+        "Grape with Isariopsis Leaf Spot",
+        "Healthy Grape Plant",
+    ],
+
+    "peach": [
+        "Peach with Bacterial Spot",
+        "Healthy Peach Plant",
+    ],
+
+    "bell_pepper": [
+        "Bell Pepper with Bacterial Spot",
+        "Healthy Bell Pepper Plant",
+    ],
+
+    "potato": [
+        "Potato with Early Blight",
+        "Potato with Late Blight",
+        "Healthy Potato Plant",
+    ],
+
     "tomato": [
         "Tomato with Bacterial Spot",
         "Tomato with Early Blight",
@@ -41,26 +83,23 @@ CROP_LABELS = {
         "Tomato Mosaic Virus",
         "Healthy Tomato Plant",
     ],
-
-    "potato": [
-        "Potato with Early Blight",
-        "Potato with Late Blight",
-        "Healthy Potato Plant",
-    ],
-
-    "maize": [
-        "Corn (Maize) with Cercospora and Gray Leaf Spot",
-        "Corn (Maize) with Common Rust",
-        "Corn (Maize) with Northern Leaf Blight",
-        "Healthy Corn (Maize) Plant",
-    ],
+    "strawberry": [
+    "Strawberry with Leaf Scorch",
+    "Healthy Strawberry Plant",
+],
 }
+
 
 
 def normalize_crop(value: str) -> str:
     return value.strip().lower()
 
+def get_crop_for_label(label: str):
+    for crop_name, labels in CROP_LABELS.items():
+        if label in labels:
+            return crop_name
 
+    return None
 def softmax(values):
     arr = np.array(values, dtype=np.float64)
     exp = np.exp(arr - np.max(arr))
@@ -97,7 +136,10 @@ async def predict(
     crop: str = Form("tomato"),
 ):
     try:
-        # 1. Validate crop
+        # -------------------------------------------------
+        # 1. VALIDATE CROP
+        # -------------------------------------------------
+
         crop_key = normalize_crop(crop)
 
         if crop_key not in CROP_LABELS:
@@ -106,7 +148,10 @@ async def predict(
                 detail=f"Unsupported crop: {crop}",
             )
 
-        # 2. Read image
+        # -------------------------------------------------
+        # 2. READ IMAGE
+        # -------------------------------------------------
+
         image_bytes = await file.read()
 
         if not image_bytes:
@@ -115,25 +160,94 @@ async def predict(
                 detail="Empty image",
             )
 
-        # 3. Open image
+        # -------------------------------------------------
+        # 3. OPEN IMAGE
+        # -------------------------------------------------
+
         image = Image.open(
             io.BytesIO(image_bytes)
         ).convert("RGB")
 
-        # 4. Preprocess using the model's own processor config
-        inputs = processor(images=image, return_tensors="np")
+        # -------------------------------------------------
+        # 4. PREPROCESS
+        # -------------------------------------------------
 
-        # 5. Run model (ONNX Runtime, no torch needed at all)
+        inputs = processor(
+            images=image,
+            return_tensors="np"
+        )
+
+        # -------------------------------------------------
+        # 5. RUN MODEL
+        # -------------------------------------------------
+
         outputs = model(**inputs)
-
         logits = outputs.logits[0]
 
-        # 6. Get classes belonging to selected crop
-        allowed_labels = set(CROP_LABELS[crop_key])
+        # -------------------------------------------------
+        # 6. ORIGINAL MODEL PREDICTIONS
+        #    ALL 38 CLASSES
+        # -------------------------------------------------
+
+        all_probabilities = softmax(
+            logits.tolist()
+        )
+
+        overall_results = []
+
+        for index, probability in enumerate(
+            all_probabilities.tolist()
+        ):
+            label = model.config.id2label[index]
+
+            overall_results.append(
+                {
+                    "label": label,
+                    "score": probability,
+                    "crop": get_crop_for_label(label),
+                }
+            )
+
+        overall_results = sorted(
+            overall_results,
+            key=lambda x: x["score"],
+            reverse=True,
+        )
+
+        # -------------------------------------------------
+        # 7. BEST OVERALL MODEL PREDICTION
+        # -------------------------------------------------
+
+        best_overall = overall_results[0]
+
+        predicted_label = best_overall["label"]
+        predicted_crop = best_overall["crop"]
+        raw_confidence = best_overall["score"]
+
+        # -------------------------------------------------
+        # 8. CHECK SELECTED CROP VS MODEL CROP
+        # -------------------------------------------------
+
+        crop_match = (
+            predicted_crop == crop_key
+        )
+
+        # -------------------------------------------------
+        # 9. SELECTED CROP PREDICTIONS
+        #
+        # Kept for compatibility with the existing
+        # frontend/backend features.
+        # -------------------------------------------------
+
+        allowed_labels = set(
+            CROP_LABELS[crop_key]
+        )
 
         crop_items = []
 
-        for index, logit in enumerate(logits.tolist()):
+        for index, logit in enumerate(
+            logits.tolist()
+        ):
             label = model.config.id2label[index]
 
             if label in allowed_labels:
@@ -145,16 +259,27 @@ async def predict(
                     }
                 )
 
-        # 7. Make sure we found crop classes
         if not crop_items:
             raise HTTPException(
                 status_code=500,
                 detail="No classes found for selected crop",
             )
 
-        # 8. Softmax only across selected crop classes (plain numpy now, no torch)
-        crop_logits = [item["logit"] for item in crop_items]
-        crop_probabilities = softmax(crop_logits)
+        # -------------------------------------------------
+        # 10. CROP-ONLY PROBABILITIES
+        #
+        # Kept for existing top_predictions compatibility.
+        # We DO NOT use this for the main confidence anymore.
+        # -------------------------------------------------
+
+        crop_logits = [
+            item["logit"]
+            for item in crop_items
+        ]
+
+        crop_probabilities = softmax(
+            crop_logits
+        )
 
         crop_results = []
 
@@ -169,21 +294,40 @@ async def predict(
                 }
             )
 
-        # 9. Pick best prediction
-        best = max(
-            crop_results,
-            key=lambda item: item["score"],
-        )
+        # -------------------------------------------------
+        # 11. RETURN
+        # -------------------------------------------------
 
-        # 10. Return result
         return {
-            "status": "success",
+            "status": (
+                "success"
+                if crop_match
+                else "crop_mismatch"
+            ),
+
+            # Crop selected by user
             "crop": crop_key,
-            "disease": best["label"],
+
+            # Crop predicted by the original 38-class model
+            "predicted_crop": predicted_crop,
+
+            # Whether model prediction belongs to
+            # the crop selected by the user
+            "crop_match": crop_match,
+
+            # Main prediction comes directly from
+            # the original 38-class model
+            "disease": predicted_label,
+
+            # IMPORTANT:
+            # This is now the ORIGINAL 38-class confidence,
+            # not the inflated crop-only confidence.
             "confidence": round(
-                best["score"] * 100,
+                raw_confidence * 100,
                 2,
             ),
+
+            # Existing selected-crop predictions
             "top_predictions": [
                 {
                     "label": item["label"],
@@ -197,6 +341,20 @@ async def predict(
                     key=lambda x: x["score"],
                     reverse=True,
                 )[:5]
+            ],
+
+            # Original model predictions
+            # across all 38 classes
+            "overall_predictions": [
+                {
+                    "label": item["label"],
+                    "confidence": round(
+                        item["score"] * 100,
+                        2,
+                    ),
+                    "crop": item["crop"],
+                }
+                for item in overall_results[:10]
             ],
         }
 

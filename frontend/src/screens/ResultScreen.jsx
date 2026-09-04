@@ -7,8 +7,13 @@ import {
   Camera,
   UserCheck,
   ClipboardCheck,
+  Leaf,
 } from "lucide-react";
-import { startFollowUp } from "../api/client";
+import {
+  startFollowUp,
+  getScanHistory,
+  requestExpertReview,
+} from "../api/client";
 import { COLORS } from "../styles/theme";
 import TopBar from "../components/TopBar";
 import PrimaryButton from "../components/PrimaryButton";
@@ -30,6 +35,13 @@ function formatModelLabel(label = "") {
   if (!label) return "";
   return label
     .replace(/___/g, " — ")
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+function formatCropName(crop = "") {
+  if (!crop) return "";
+
+  return crop
     .replace(/_/g, " ")
     .replace(/\b\w/g, (char) => char.toUpperCase());
 }
@@ -67,57 +79,118 @@ function SectionLabel({ icon, children, color = COLORS.inkSoft }) {
 }
 
 export default function ResultScreen() {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const { state } = useLocation();
   const navigate = useNavigate();
-
+   
   const scan = state?.scan;
   console.log("CURRENT SCAN:", scan);
   const [followUpLoading, setFollowUpLoading] = React.useState(false);
 
-async function handleStartFollowUp() {
-  try {
+
+  const uncertain = state?.uncertain || false;
+  const cropMismatch = state?.cropMismatch || false;
+  const [latestScan, setLatestScan] = React.useState(scan || null);
+const [expertLoading, setExpertLoading] = React.useState(false);
+const [expertRequesting, setExpertRequesting] = React.useState(false);
+  
+  const [followUpStarting, setFollowUpStarting] = React.useState(false);
+const [followUpStarted, setFollowUpStarted] = React.useState(false);
+React.useEffect(() => {
+  async function loadLatestScan() {
     if (!scan?._id) {
-      console.error("No scan ID available:", scan);
-      alert("This scan cannot be added to follow-up monitoring.");
       return;
     }
 
-    setFollowUpLoading(true);
+    try {
+      setExpertLoading(true);
 
-    console.log("Starting follow-up for scan:", scan._id);
+      const data = await getScanHistory(lang);
 
-    await startFollowUp(scan._id);
+      const scans = data.scans || [];
 
-    navigate("/follow-up");
+      const currentScan = scans.find(
+        (item) => item._id === scan._id
+      );
+
+      if (currentScan) {
+        console.log(
+          "LATEST SCAN FROM DATABASE:",
+          currentScan
+        );
+
+        setLatestScan(currentScan);
+      }
+    } catch (err) {
+      console.error(
+        "Could not refresh scan data:",
+        err
+      );
+    } finally {
+      setExpertLoading(false);
+    }
+  }
+
+  loadLatestScan();
+}, [scan?._id, lang]);
+async function handleRequestExpertReview() {
+  if (!scan?._id) {
+    alert("This scan cannot be submitted for expert review.");
+    return;
+  }
+
+  try {
+    setExpertRequesting(true);
+
+    const result = await requestExpertReview(scan._id);
+
+    console.log("Expert review request response:", result);
+
+    // Refresh scan from MongoDB
+    const data = await getScanHistory(lang);
+
+    const scans = data.scans || [];
+
+    const updatedScan = scans.find(
+      (item) => item._id === scan._id
+    );
+
+    if (updatedScan) {
+      setLatestScan(updatedScan);
+    }
   } catch (err) {
-    console.error("Follow-up error:", err);
-    alert(err.message || "Could not start follow-up monitoring.");
+    console.error(
+      "Request expert review error:",
+      err
+    );
+
+    alert(
+      err.message ||
+      "Could not request expert review."
+    );
   } finally {
-    setFollowUpLoading(false);
+    setExpertRequesting(false);
   }
 }
-  const uncertain = state?.uncertain || false;
-  const [expertStatus, setExpertStatus] = React.useState("not_requested");
-  const [followUpStarting, setFollowUpStarting] = React.useState(false);
-const [followUpStarted, setFollowUpStarted] = React.useState(false);
-
 async function handleStartFollowUp() {
   if (!scan?._id) {
     console.error("No scan ID available:", scan);
+    alert("This scan cannot be added to follow-up monitoring.");
     return;
   }
 
   try {
     setFollowUpStarting(true);
 
-    const { startFollowUp } = await import("../api/client");
+    console.log("Starting follow-up for scan:", scan._id);
 
-    await startFollowUp(scan._id);
+    const result = await startFollowUp(scan._id);
 
-   setFollowUpStarted(true);
-navigate("/follow-up");
+    console.log("Follow-up API response:", result);
 
+    setFollowUpStarted(true);
+
+    navigate("/follow-up");
   } catch (err) {
     console.error("Start follow-up error:", err);
     alert(err.message || "Could not start follow-up monitoring.");
@@ -126,6 +199,166 @@ navigate("/follow-up");
   }
 }
 
+/* ------------------------------------------------------
+ * CROP MISMATCH RESULT
+ * ------------------------------------------------------ */
+if (cropMismatch) {
+  const selectedCrop = formatCropName(
+    state?.selectedCrop || state?.crop || ""
+  );
+
+  const detectedCrop = formatCropName(
+    state?.detectedCrop || ""
+  );
+
+  return (
+    <div
+      style={{
+        maxWidth: 700,
+        margin: "0 auto",
+        padding: "0 20px 40px",
+      }}
+    >
+      <TopBar
+        title={t("result")}
+        onBack={() => navigate("/scan")}
+      />
+
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 14,
+        }}
+      >
+        {/* Crop mismatch warning */}
+        <Card accentColor={COLORS.amberDeep}>
+          <SectionLabel
+            icon={
+              <AlertTriangle
+                size={16}
+                color={COLORS.amberDeep}
+              />
+            }
+            color={COLORS.amberDeep}
+          >
+            AI ASSESSMENT
+          </SectionLabel>
+
+          <h2
+            style={{
+              margin: "0 0 10px",
+              fontFamily: "'Fraunces', serif",
+              fontSize: 24,
+              fontWeight: 600,
+              color: COLORS.forest,
+            }}
+          >
+            Crop mismatch detected
+          </h2>
+
+          <p
+            style={{
+              margin: 0,
+              fontSize: 14,
+              color: COLORS.inkSoft,
+              lineHeight: 1.6,
+            }}
+          >
+            You selected{" "}
+            <b style={{ color: COLORS.ink }}>
+              {selectedCrop}
+            </b>
+            , but the AI analysis suggests that the image
+            may be a{" "}
+            <b style={{ color: COLORS.ink }}>
+              {detectedCrop}
+            </b>{" "}
+            image.
+          </p>
+        </Card>
+
+        {/* No diagnosis */}
+        <Card>
+          <SectionLabel
+            icon={
+              <AlertTriangle
+                size={16}
+                color={COLORS.amberDeep}
+              />
+            }
+            color={COLORS.amberDeep}
+          >
+            No diagnosis made
+          </SectionLabel>
+
+          <p
+            style={{
+              margin: 0,
+              fontSize: 14,
+              color: COLORS.ink,
+              lineHeight: 1.6,
+            }}
+          >
+            We don't want to give you a disease diagnosis
+            for the wrong crop. Please select the correct
+            crop or upload a clear image of the selected crop.
+          </p>
+        </Card>
+
+        {/* Better image tips */}
+        <Card>
+          <SectionLabel color={COLORS.forest}>
+            {t("forBetterResult")}
+          </SectionLabel>
+
+          <ul
+            style={{
+              margin: 0,
+              paddingLeft: 20,
+              color: COLORS.inkSoft,
+              fontSize: 13,
+              lineHeight: 1.7,
+            }}
+          >
+            <li>{t("tipOneLeaf")}</li>
+            <li>{t("tipDaylight")}</li>
+            <li>{t("tipAvoidDistant")}</li>
+          </ul>
+        </Card>
+
+        {/* Actions */}
+        <div
+          style={{
+            display: "flex",
+            gap: 12,
+            flexWrap: "wrap",
+          }}
+        >
+          <PrimaryButton
+            onClick={() => navigate("/scan")}
+            icon={Camera}
+            style={{ flex: "1 1 220px" }}
+          >
+            Retake Photo
+          </PrimaryButton>
+
+          <PrimaryButton
+            onClick={() => navigate("/scan")}
+            style={{
+              flex: "1 1 220px",
+              background: "transparent",
+              color: COLORS.forest,
+              border: `1.5px solid ${COLORS.forest}`,
+            }}
+          >
+            Select Another Crop   
+          </PrimaryButton>
+        </div>
+      </div>
+    </div>
+  );
+}
   /* ------------------------------------------------------
    * UNCERTAIN AI RESULT
    * ------------------------------------------------------ */
@@ -254,60 +487,329 @@ navigate("/follow-up");
               </p>
             </Card>
 
-            {/* Expert Validation */}
-            <Card>
-              <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: expertStatus === "not_requested" ? 12 : 0 }}>
-                <UserCheck size={18} color={COLORS.forest} />
+            {/* Nearby crop precaution */}
+            <Card accentColor={COLORS.leaf}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: 11,
+                  marginBottom: 12,
+                }}
+              >
+                <div
+                  style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: 10,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    background: "rgba(77,135,89,0.1)",
+                    flexShrink: 0,
+                  }}
+                >
+                  <Leaf size={18} color={COLORS.leaf} />
+                </div>
+
                 <div>
-                  <p style={{ margin: 0, fontSize: 12, fontWeight: 800, color: COLORS.forest, letterSpacing: 0.4 }}>
-                    {t("expertValidation")}
+                  <p
+                    style={{
+                      margin: 0,
+                      fontSize: 12.5,
+                      fontWeight: 800,
+                      color: COLORS.forest,
+                      letterSpacing: 0.3,
+                    }}
+                  >
+                    {t("nearbyCropPrecaution")}
                   </p>
-                  <p style={{ margin: "3px 0 0", fontSize: 11.5, color: COLORS.inkSoft }}>{t("expertValidationDesc")}</p>
+
+                  <p
+                    style={{
+                      margin: "4px 0 0",
+                      fontSize: 12.5,
+                      lineHeight: 1.55,
+                      color: COLORS.inkSoft,
+                    }}
+                  >
+                    {t("nearbyCropPrecautionDesc")}
+                  </p>
                 </div>
               </div>
 
-              {expertStatus === "not_requested" ? (
-                <>
-                  <p style={{ margin: "12px 0 0", fontSize: 12.5, lineHeight: 1.55, color: COLORS.inkSoft }}>
-                    {t("expertReviewRequestPrompt")}
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => setExpertStatus("requested")}
-                    style={{
-                      marginTop: 12,
-                      border: "none",
-                      background: COLORS.forest,
-                      color: "#fff",
-                      padding: "9px 14px",
-                      borderRadius: 10,
-                      fontSize: 12,
-                      fontWeight: 700,
-                      cursor: "pointer",
-                    }}
-                  >
-                    {t("requestExpertReview")}
-                  </button>
-                </>
-              ) : (
-                <div
-                  style={{
-                    marginTop: 13,
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 8,
-                    padding: "11px 12px",
-                    background: "rgba(62,125,83,0.1)",
-                    borderRadius: 12,
-                    fontSize: 12.5,
-                    color: COLORS.forest,
-                  }}
-                >
-                  <CheckCircle2 size={15} color={COLORS.ok} />
-                  {t("expertReviewRequested")}
-                </div>
-              )}
+              <button
+                type="button"
+                onClick={() =>
+                  navigate("/scan", {
+                    state: {
+                      nearbyScan: true,
+                      nearbyCrop:
+                        scan.crop ||
+                        state?.crop ||
+                        "tomato",
+                      sourceDisease: scan.disease || "",
+                    },
+                  })
+                }
+                style={{
+                  width: "100%",
+                  border: "none",
+                  background: COLORS.forest,
+                  color: "#fff",
+                  padding: "11px 15px",
+                  borderRadius: 10,
+                  fontSize: 12.5,
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 7,
+                }}
+              >
+                <Camera size={15} />
+                {t("scanNearbyCrops")}
+              </button>
             </Card>
+
+{/* Expert Review */}
+<Card accentColor={COLORS.forest}>
+  <div
+    style={{
+      display: "flex",
+      alignItems: "center",
+      gap: 9,
+      marginBottom: 12,
+    }}
+  >
+    <UserCheck
+      size={18}
+      color={COLORS.forest}
+    />
+
+    <div>
+      <p
+        style={{
+          margin: 0,
+          fontSize: 12,
+          fontWeight: 800,
+          color: COLORS.forest,
+          letterSpacing: 0.4,
+        }}
+      >
+        Expert Review
+      </p>
+
+      <p
+        style={{
+          margin: "3px 0 0",
+          fontSize: 11.5,
+          color: COLORS.inkSoft,
+        }}
+      >
+        Professional agricultural guidance
+        from an expert.
+      </p>
+    </div>
+  </div>
+
+ {expertLoading ? (
+  <div
+    style={{
+      padding: "11px 12px",
+      background: "#F0EEE4",
+      borderRadius: 11,
+      fontSize: 12,
+      color: COLORS.inkSoft,
+    }}
+  >
+    Checking for expert review...
+  </div>
+) : latestScan?.expertReview?.status === "reviewed" ? (
+  <div>
+    {/* Reviewed status */}
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 8,
+        padding: "10px 12px",
+        background: "rgba(62,125,83,0.1)",
+        borderRadius: 11,
+        marginBottom: 12,
+      }}
+    >
+      <CheckCircle2
+        size={16}
+        color={COLORS.ok}
+      />
+
+      <div>
+        <div
+          style={{
+            fontSize: 12,
+            fontWeight: 700,
+            color: COLORS.forest,
+          }}
+        >
+          Reviewed by Agricultural Expert
+        </div>
+
+        {latestScan.expertReview.reviewedAt && (
+          <div
+            style={{
+              marginTop: 2,
+              fontSize: 10.5,
+              color: COLORS.inkSoft,
+            }}
+          >
+            Reviewed on{" "}
+            {new Date(
+              latestScan.expertReview.reviewedAt
+            ).toLocaleString()}
+          </div>
+        )}
+      </div>
+    </div>
+
+    {/* Expert advice */}
+    <div
+      style={{
+        background: "#F0EEE4",
+        borderRadius: 12,
+        padding: 14,
+      }}
+    >
+      <div
+        style={{
+          fontSize: 10.5,
+          fontWeight: 700,
+          color: COLORS.inkSoft,
+          marginBottom: 7,
+          textTransform: "uppercase",
+          letterSpacing: 0.5,
+        }}
+      >
+        Expert Advice
+      </div>
+
+      <p
+        style={{
+          margin: 0,
+          fontSize: 13,
+          lineHeight: 1.65,
+          color: COLORS.ink,
+          whiteSpace: "pre-wrap",
+        }}
+      >
+        {latestScan.expertReview.advice}
+      </p>
+    </div>
+  </div>
+) : latestScan?.expertReview?.status === "pending" ? (
+  /* Review requested, waiting for expert */
+  <div>
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 8,
+        padding: "10px 12px",
+        background: "rgba(198,150,55,0.12)",
+        borderRadius: 11,
+        marginBottom: 12,
+      }}
+    >
+      <UserCheck
+        size={16}
+        color={COLORS.amberDeep}
+      />
+
+      <div>
+        <div
+          style={{
+            fontSize: 12,
+            fontWeight: 700,
+            color: COLORS.forest,
+          }}
+        >
+          Expert Review Requested
+        </div>
+
+        {latestScan.expertReview.requestedAt && (
+          <div
+            style={{
+              marginTop: 2,
+              fontSize: 10.5,
+              color: COLORS.inkSoft,
+            }}
+          >
+            Requested on{" "}
+            {new Date(
+              latestScan.expertReview.requestedAt
+            ).toLocaleString()}
+          </div>
+        )}
+      </div>
+    </div>
+
+    <p
+      style={{
+        margin: 0,
+        fontSize: 13,
+        color: COLORS.inkSoft,
+        lineHeight: 1.6,
+      }}
+    >
+      Your case has been sent to an agricultural expert.
+      Expert guidance will appear here once the review is
+      completed.
+    </p>
+  </div>
+) : (
+  /* Not requested yet */
+  <div>
+    <div
+      style={{
+        padding: "12px 13px",
+        background: "#F0EEE4",
+        borderRadius: 11,
+        fontSize: 12.5,
+        color: COLORS.inkSoft,
+        lineHeight: 1.55,
+        marginBottom: 12,
+      }}
+    >
+      Need additional guidance? Send this crop case to an
+      agricultural expert for professional review.
+    </div>
+
+    <button
+      type="button"
+      onClick={handleRequestExpertReview}
+      disabled={expertRequesting}
+      style={{
+        border: "none",
+        background: COLORS.forest,
+        color: "#fff",
+        padding: "11px 15px",
+        borderRadius: 10,
+        fontSize: 12.5,
+        fontWeight: 700,
+        cursor: expertRequesting
+          ? "wait"
+          : "pointer",
+        opacity: expertRequesting ? 0.7 : 1,
+      }}
+    >
+      {expertRequesting
+        ? "Requesting expert review..."
+        : "Request Expert Review"}
+    </button>
+  </div>
+)}
+</Card>
 
             {/* Recommended action */}
             <Card accentColor={COLORS.ok}>
@@ -402,11 +904,11 @@ navigate("/follow-up");
   )}
 </Card>
             {/* IPM recommendations — flattened, no card-inside-a-card */}
-            {scan.ipm && (
+            {latestScan?.ipm && (
               <Card>
                 <SectionLabel color={COLORS.forest}>{t("ipmRecommendations")}</SectionLabel>
                 {IPM_META.map(({ icon, key, field }) => {
-                  const items = scan.ipm[field];
+                  const items = latestScan.ipm[field];
                   if (!items?.length) return null;
                   return (
                     <div key={field} style={{ marginBottom: 12, paddingBottom: 12, borderBottom: `1px solid ${COLORS.line}` }}>

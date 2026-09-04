@@ -1,12 +1,27 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   MapContainer,
   TileLayer,
   CircleMarker,
   Popup,
+  useMap,
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
+function MapRecenter({ location }) {
+  const map = useMap();
 
+  useEffect(() => {
+    if (location?.lat && location?.lng) {
+      map.setView(
+        [location.lat, location.lng],
+        map.getZoom(),
+        { animate: true }
+      );
+    }
+  }, [location, map]);
+
+  return null;
+}
 export default function DiseaseHotspotMap({
   location,
   hotspots = [],
@@ -26,15 +41,19 @@ export default function DiseaseHotspotMap({
 isolation: "isolate",
       }}
     >
-      <MapContainer
-        center={[location.lat, location.lng]}
-        zoom={11}
-        style={{ width: "100%", height: "100%" }}
-      >
-        <TileLayer
-          attribution='&copy; OpenStreetMap contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
+<MapContainer
+  center={[location.lat, location.lng]}
+  zoom={11}
+  style={{ width: "100%", height: "100%" }}
+>
+  <MapRecenter location={location} />
+
+  <TileLayer
+    attribution="&copy; OpenStreetMap contributors"
+    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+  />
+
+
 
         {/* Farmer's current location */}
         <CircleMarker

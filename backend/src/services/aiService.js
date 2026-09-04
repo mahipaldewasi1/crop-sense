@@ -1,1155 +1,2382 @@
+const fs = require("fs");
 
+
+// ============================================================
+// DISEASE PROFILES
+// ============================================================
 
 const DISEASE_PROFILES = [
+  // ----------------------------------------------------------
+  // TOMATO
+  // ----------------------------------------------------------
   {
     classKey: "Tomato_Early_Blight",
-    crop: { en: "Tomato", hi: "टमाटर", mr: "टोमॅटो" },
-    disease: {
-      en: "Early Blight",
-      hi: "अगेती झुलसा",
-      mr: "लवकर करपा",
-    },
+    crop: "Tomato",
+    disease: "Early Blight",
     severity: "Medium",
-    severityPercent: 62,
-    confidence: 91,
-    recommendation: {
-      en: "Spray copper-based fungicide within 7 days. Remove affected leaves and avoid overwatering.",
-      hi: "7 दिन के अंदर कॉपर-आधारित फफूंदनाशक स्प्रे करें। प्रभावित पत्तियां हटा दें और ज्यादा पानी देने से बचें।",
-      mr: "7 दिवसांच्या आत कॉपर-आधारित बुरशीनाशक फवारणी करा. प्रभावित पाने काढून टाका आणि जास्त पाणी देणे टाळा.",
-    },
+    severityPercent: 55,
+    confidence: 85,
+    recommendation:
+      "Remove affected leaves, improve air circulation, avoid overhead watering, and apply an appropriate fungicide if the disease continues to spread.",
+    ipm: {
+      prevention:
+        "Maintain proper spacing, remove infected leaves, and avoid wetting foliage.",
+      monitoring:
+        "Inspect lower leaves regularly for dark spots with concentric rings.",
+      treatment:
+        "Remove infected foliage and use a suitable fungicide according to the label."
+    }
   },
 
   {
     classKey: "Tomato_Leaf_Curl_Virus",
-    crop: { en: "Tomato", hi: "टमाटर", mr: "टोमॅटो" },
-    disease: {
-      en: "Leaf Curl Virus",
-      hi: "पत्ती मरोड़ वायरस",
-      mr: "पान कुरळी विषाणू",
-    },
+    crop: "Tomato",
+    disease: "Tomato Yellow Leaf Curl Virus",
     severity: "High",
-    severityPercent: 84,
-    confidence: 88,
-    recommendation: {
-      en: "Isolate affected plants immediately, spray neem oil to control whitefly. Contact your local Krishi Vigyan Kendra for severe cases.",
-      hi: "प्रभावित पौधों को तुरंत अलग करें, सफेद मक्खी नियंत्रण के लिए नीम तेल स्प्रे करें। गंभीर मामलों में कृषि विज्ञान केंद्र से संपर्क करें।",
-      mr: "प्रभावित रोपे लगेच वेगळी करा, पांढरी माशी नियंत्रणासाठी निंबोळी तेल फवारणी करा. गंभीर प्रकरणांमध्ये कृषि विज्ञान केंद्राशी संपर्क साधा.",
-    },
-  },
-
-  {
-    classKey: "Wheat_Healthy",
-    crop: { en: "Wheat", hi: "गेहूं", mr: "गहू" },
-    disease: { en: "Healthy", hi: "स्वस्थ", mr: "निरोगी" },
-    severity: "Low",
-    severityPercent: 8,
-    confidence: 95,
-    recommendation: {
-      en: "Crop is healthy. Continue regular monitoring and follow a balanced fertilizer schedule.",
-      hi: "फसल स्वस्थ है। नियमित निगरानी जारी रखें और संतुलित उर्वरक कार्यक्रम का पालन करें।",
-      mr: "पीक निरोगी आहे. नियमित निरीक्षण सुरू ठेवा आणि संतुलित खत वेळापत्रक पाळा.",
-    },
-  },
-
-  {
-    classKey: "Potato_Late_Blight",
-    crop: { en: "Potato", hi: "आलू", mr: "बटाटा" },
-    disease: { en: "Late Blight", hi: "पछेती झुलसा", mr: "उशिरा करपा" },
-    severity: "High",
-    severityPercent: 78,
-    confidence: 89,
-    recommendation: {
-  en: "Follow the IPM recommendations below, monitor disease spread closely, and use only locally approved treatment options when intervention is justified.",
-
-  hi: "नीचे दी गई IPM सलाह का पालन करें, रोग के फैलाव की नियमित निगरानी करें और उपचार आवश्यक होने पर केवल स्थानीय रूप से स्वीकृत विकल्पों का उपयोग करें।",
-
-  mr: "खालील IPM शिफारसींचे पालन करा, रोगाचा प्रसार नियमितपणे तपासा आणि उपचाराची गरज असल्यास केवळ स्थानिक मान्य पर्यायांचा वापर करा.",
-},
-  },
-
-  {
-    classKey: "Cotton_Bacterial_Blight",
-    crop: { en: "Cotton", hi: "कपास", mr: "कापूस" },
-    disease: { en: "Bacterial Blight", hi: "जीवाणु झुलसा", mr: "जिवाणू करपा" },
-    severity: "Medium",
-    severityPercent: 55,
+    severityPercent: 80,
     confidence: 85,
-    recommendation: {
-      en: "Spray copper oxychloride. Choose a disease-resistant seed variety for the next sowing.",
-      hi: "कॉपर ऑक्सीक्लोराइड स्प्रे करें। अगली बुवाई के लिए रोग-प्रतिरोधी बीज किस्म चुनें।",
-      mr: "कॉपर ऑक्सिक्लोराईड फवारणी करा. पुढील पेरणीसाठी रोगप्रतिकारक बियाणे वाण निवडा.",
-    },
+    recommendation:
+      "Remove severely infected plants, control whiteflies, remove weeds around the crop, and use resistant varieties when possible."
   },
-  {
-  classKey: "Potato_Early_Blight",
-
-  crop: {
-    en: "Potato",
-    hi: "आलू",
-    mr: "बटाटा",
-  },
-
-  disease: {
-    en: "Early Blight",
-    hi: "अगेती झुलसा",
-    mr: "लवकर करपा",
-  },
-
-  severity: "Medium",
-  severityPercent: 58,
-  confidence: 89,
-
-  recommendation: {
-    en: "Remove severely affected leaves, avoid overhead irrigation, and maintain good field sanitation. Follow locally approved disease-management guidance if treatment is required.",
-
-    hi: "बहुत अधिक प्रभावित पत्तियों को हटाएं, ऊपर से पानी देने से बचें और खेत की स्वच्छता बनाए रखें। आवश्यकता होने पर स्थानीय रूप से स्वीकृत रोग-प्रबंधन सलाह का पालन करें।",
-
-    mr: "जास्त बाधित पाने काढून टाका, पानांवरून पाणी देणे टाळा आणि शेताची स्वच्छता राखा. उपचाराची गरज असल्यास स्थानिक मान्य रोग व्यवस्थापन सल्ल्याचे पालन करा.",
-  },
-},
-
-{
-  classKey: "Potato_Healthy",
-
-  crop: {
-    en: "Potato",
-    hi: "आलू",
-    mr: "बटाटा",
-  },
-
-  disease: {
-    en: "Healthy",
-    hi: "स्वस्थ",
-    mr: "निरोगी",
-  },
-
-  severity: "Low",
-  severityPercent: 8,
-  confidence: 95,
-
-  recommendation: {
-    en: "No major disease signs detected. Continue regular scouting, maintain field sanitation, and monitor the crop regularly.",
-
-    hi: "रोग के कोई प्रमुख लक्षण नहीं पाए गए। नियमित निरीक्षण जारी रखें, खेत की स्वच्छता बनाए रखें और फसल की निगरानी करते रहें।",
-
-    mr: "रोगाची ठळक लक्षणे आढळली नाहीत. नियमित पाहणी सुरू ठेवा, शेताची स्वच्छता राखा आणि पिकाचे नियमित निरीक्षण करा.",
-  },
-},
-];
-
-const ADDITIONAL_PROFILES = [
-    
-  // =====================================================
-  // TOMATO
-  // =====================================================
 
   {
     classKey: "Tomato_Bacterial_Spot",
-    crop: {
-      en: "Tomato",
-      hi: "टमाटर",
-      mr: "टोमॅटो",
-    },
-    disease: {
-      en: "Bacterial Spot",
-      hi: "जीवाणु धब्बा",
-      mr: "जिवाणू ठिपका",
-    },
+    crop: "Tomato",
+    disease: "Bacterial Spot",
     severity: "Medium",
     severityPercent: 55,
-    recommendation: {
-      en: "Remove severely affected leaves, maintain field sanitation, avoid prolonged leaf wetness, and follow locally approved disease-management guidance.",
-      hi: "अधिक प्रभावित पत्तियां हटाएं, खेत की स्वच्छता बनाए रखें, पत्तियों को लंबे समय तक गीला रहने से बचाएं और स्थानीय रूप से स्वीकृत रोग प्रबंधन सलाह का पालन करें।",
-      mr: "जास्त बाधित पाने काढून टाका, शेताची स्वच्छता राखा, पाने जास्त वेळ ओलसर राहू देऊ नका आणि स्थानिक मान्य रोग व्यवस्थापन सल्ल्याचे पालन करा.",
-    },
+    confidence: 85,
+    recommendation:
+      "Remove infected leaves, avoid overhead irrigation, sanitize tools, and use an appropriate copper-based treatment when recommended."
   },
 
   {
     classKey: "Tomato_Late_Blight",
-    crop: {
-      en: "Tomato",
-      hi: "टमाटर",
-      mr: "टोमॅटो",
-    },
-    disease: {
-      en: "Late Blight",
-      hi: "पछेती झुलसा",
-      mr: "उशिरा करपा",
-    },
+    crop: "Tomato",
+    disease: "Late Blight",
     severity: "High",
     severityPercent: 80,
-    recommendation: {
-      en: "Inspect plants frequently, remove severely affected material where practical, reduce prolonged leaf wetness, and use locally approved disease-management options when treatment is justified.",
-      hi: "पौधों की नियमित जांच करें, जहां संभव हो गंभीर रूप से प्रभावित हिस्से हटाएं, पत्तियों के लंबे समय तक गीले रहने को कम करें और उपचार आवश्यक होने पर स्थानीय रूप से स्वीकृत विकल्पों का उपयोग करें।",
-      mr: "पिकाची नियमित पाहणी करा, शक्य असल्यास जास्त बाधित भाग काढून टाका, पाने जास्त वेळ ओलसर राहणे कमी करा आणि उपचार आवश्यक असल्यास स्थानिक मान्य पर्याय वापरा.",
-    },
+    confidence: 85,
+    recommendation:
+      "Remove infected plant material, improve air circulation, avoid prolonged leaf wetness, and apply a suitable fungicide promptly."
   },
 
   {
     classKey: "Tomato_Leaf_Mold",
-    crop: {
-      en: "Tomato",
-      hi: "टमाटर",
-      mr: "टोमॅटो",
-    },
-    disease: {
-      en: "Leaf Mold",
-      hi: "पत्ती फफूंदी",
-      mr: "पानांवरील बुरशी",
-    },
+    crop: "Tomato",
+    disease: "Leaf Mold",
     severity: "Medium",
     severityPercent: 50,
-    recommendation: {
-      en: "Improve ventilation, reduce prolonged leaf wetness, remove severely affected leaves where practical, and follow locally approved disease-management guidance.",
-      hi: "वेंटिलेशन बेहतर करें, पत्तियों के लंबे समय तक गीले रहने को कम करें, जहां संभव हो प्रभावित पत्तियां हटाएं और स्थानीय रोग प्रबंधन सलाह का पालन करें।",
-      mr: "वायुवीजन सुधारित करा, पाने जास्त वेळ ओलसर राहू देऊ नका, शक्य असल्यास बाधित पाने काढून टाका आणि स्थानिक रोग व्यवस्थापन सल्ल्याचे पालन करा.",
-    },
+    confidence: 85,
+    recommendation:
+      "Improve ventilation, reduce humidity, avoid overhead watering, and remove infected leaves."
   },
 
   {
     classKey: "Tomato_Septoria_Leaf_Spot",
-    crop: {
-      en: "Tomato",
-      hi: "टमाटर",
-      mr: "टोमॅटो",
-    },
-    disease: {
-      en: "Septoria Leaf Spot",
-      hi: "सेप्टोरिया पत्ती धब्बा",
-      mr: "सेप्टोरिया पानावरील ठिपका",
-    },
+    crop: "Tomato",
+    disease: "Septoria Leaf Spot",
     severity: "Medium",
-    severityPercent: 55,
-    recommendation: {
-      en: "Remove severely affected lower leaves where practical, maintain field sanitation, avoid overhead irrigation, and follow locally approved disease-management guidance.",
-      hi: "जहां संभव हो गंभीर रूप से प्रभावित निचली पत्तियां हटाएं, खेत की स्वच्छता बनाए रखें, ऊपर से सिंचाई से बचें और स्थानीय रोग प्रबंधन सलाह का पालन करें।",
-      mr: "शक्य असल्यास जास्त बाधित खालची पाने काढून टाका, शेताची स्वच्छता राखा, वरून सिंचन टाळा आणि स्थानिक रोग व्यवस्थापन सल्ल्याचे पालन करा.",
-    },
+    severityPercent: 50,
+    confidence: 85,
+    recommendation:
+      "Remove infected leaves, keep foliage dry, clear plant debris, and apply an appropriate fungicide if necessary."
   },
 
   {
     classKey: "Tomato_Spider_Mites",
-    crop: {
-      en: "Tomato",
-      hi: "टमाटर",
-      mr: "टोमॅटो",
-    },
-    disease: {
-      en: "Spider Mites",
-      hi: "स्पाइडर माइट्स",
-      mr: "कोळी कीड",
-    },
+    crop: "Tomato",
+    disease: "Spider Mites",
     severity: "Medium",
-    severityPercent: 55,
-    recommendation: {
-      en: "Inspect the undersides of leaves for mite activity and webbing, reduce plant stress, and use locally approved pest-management options when treatment is justified.",
-      hi: "पत्तियों की निचली सतह पर माइट्स और जाले देखें, पौधों का तनाव कम करें और उपचार आवश्यक होने पर स्थानीय रूप से स्वीकृत कीट प्रबंधन विकल्पों का उपयोग करें।",
-      mr: "पानांच्या खालच्या बाजूस कोळी किडीची हालचाल व जाळी तपासा, झाडावरील ताण कमी करा आणि उपचार आवश्यक असल्यास स्थानिक मान्य कीड व्यवस्थापन पर्याय वापरा.",
-    },
+    severityPercent: 50,
+    confidence: 85,
+    recommendation:
+      "Inspect the undersides of leaves, remove heavily affected foliage, maintain adequate plant hydration, and use an appropriate miticide if necessary."
   },
 
   {
     classKey: "Tomato_Target_Spot",
-    crop: {
-      en: "Tomato",
-      hi: "टमाटर",
-      mr: "टोमॅटो",
-    },
-    disease: {
-      en: "Target Spot",
-      hi: "टारगेट स्पॉट",
-      mr: "टार्गेट स्पॉट",
-    },
+    crop: "Tomato",
+    disease: "Target Spot",
     severity: "Medium",
     severityPercent: 55,
-    recommendation: {
-      en: "Scout regularly for expanding leaf lesions, remove severely affected material where practical, maintain sanitation, and use locally approved disease-management options when justified.",
-      hi: "फैलते हुए पत्ती धब्बों के लिए नियमित निगरानी करें, जहां संभव हो गंभीर रूप से प्रभावित हिस्से हटाएं, स्वच्छता बनाए रखें और आवश्यकता होने पर स्थानीय रूप से स्वीकृत विकल्पों का उपयोग करें।",
-      mr: "पानांवरील वाढणाऱ्या डागांसाठी नियमित पाहणी करा, शक्य असल्यास जास्त बाधित भाग काढून टाका, स्वच्छता राखा आणि गरज असल्यास स्थानिक मान्य पर्याय वापरा.",
-    },
+    confidence: 85,
+    recommendation:
+      "Remove infected leaves, improve air circulation, avoid overhead watering, and apply an appropriate fungicide if needed."
   },
 
   {
     classKey: "Tomato_Mosaic_Virus",
-    crop: {
-      en: "Tomato",
-      hi: "टमाटर",
-      mr: "टोमॅटो",
-    },
-    disease: {
-      en: "Mosaic Virus",
-      hi: "मोज़ेक वायरस",
-      mr: "मोझॅक विषाणू",
-    },
+    crop: "Tomato",
+    disease: "Tomato Mosaic Virus",
     severity: "High",
-    severityPercent: 75,
-    recommendation: {
-      en: "Remove severely affected plants where practical, use healthy planting material, control potential vectors, and avoid spreading plant sap between plants.",
-      hi: "जहां संभव हो गंभीर रूप से प्रभावित पौधों को हटाएं, स्वस्थ रोपण सामग्री का उपयोग करें, संभावित वाहकों को नियंत्रित करें और पौधों के बीच संक्रमित रस के प्रसार से बचें।",
-      mr: "शक्य असल्यास जास्त बाधित झाडे काढून टाका, निरोगी लागवड साहित्य वापरा, संभाव्य वाहक कीटकांचे नियंत्रण करा आणि झाडांमध्ये संक्रमित रसाचा प्रसार टाळा.",
-    },
+    severityPercent: 80,
+    confidence: 85,
+    recommendation:
+      "Remove infected plants, disinfect tools, control weeds, and avoid handling healthy plants after touching infected plants."
   },
 
   {
     classKey: "Tomato_Healthy",
-    crop: {
-      en: "Tomato",
-      hi: "टमाटर",
-      mr: "टोमॅटो",
-    },
-    disease: {
-      en: "Healthy",
-      hi: "स्वस्थ",
-      mr: "निरोगी",
-    },
+    crop: "Tomato",
+    disease: "Healthy",
     severity: "Low",
-    severityPercent: 5,
-    recommendation: {
-      en: "No major disease signs detected. Continue regular scouting, maintain field sanitation and monitor the crop regularly.",
-      hi: "रोग के कोई प्रमुख लक्षण नहीं पाए गए। नियमित निरीक्षण जारी रखें, खेत की स्वच्छता बनाए रखें और फसल की निगरानी करते रहें।",
-      mr: "रोगाची ठळक लक्षणे आढळली नाहीत. नियमित पाहणी सुरू ठेवा, शेताची स्वच्छता राखा आणि पिकाचे नियमित निरीक्षण करा.",
-    },
+    severityPercent: 10,
+    confidence: 95,
+    recommendation:
+      "The plant appears healthy. Continue regular monitoring, proper irrigation, balanced nutrition, and good field hygiene."
   },
 
-  // =====================================================
-  // MAIZE
-  // =====================================================
+  // ----------------------------------------------------------
+  // POTATO
+  // ----------------------------------------------------------
+  {
+    classKey: "Potato_Late_Blight",
+    crop: "Potato",
+    disease: "Late Blight",
+    severity: "High",
+    severityPercent: 85,
+    confidence: 85,
+    recommendation:
+      "Remove infected foliage, improve field ventilation, avoid prolonged leaf wetness, and apply an appropriate fungicide promptly.",
+    ipm: {
+      prevention:
+        "Use certified disease-free seed, maintain proper spacing, and avoid excessive irrigation.",
+      monitoring:
+        "Inspect foliage regularly for dark water-soaked lesions.",
+      treatment:
+        "Remove infected plant material and use an appropriate fungicide according to local recommendations."
+    }
+  },
 
   {
+    classKey: "Potato_Early_Blight",
+    crop: "Potato",
+    disease: "Early Blight",
+    severity: "Medium",
+    severityPercent: 55,
+    confidence: 85,
+    recommendation:
+      "Remove infected leaves, maintain adequate plant nutrition, improve air circulation, and apply an appropriate fungicide if necessary."
+  },
+
+  {
+    classKey: "Potato_Healthy",
+    crop: "Potato",
+    disease: "Healthy",
+    severity: "Low",
+    severityPercent: 10,
+    confidence: 95,
+    recommendation:
+      "The plant appears healthy. Continue regular monitoring, balanced nutrition, proper irrigation, and good field hygiene."
+  },
+
+  // ----------------------------------------------------------
+  // MAIZE
+  // ----------------------------------------------------------
+  {
     classKey: "Maize_Cercospora_Gray_Leaf_Spot",
-    crop: {
-      en: "Maize",
-      hi: "मक्का",
-      mr: "मका",
-    },
-    disease: {
-      en: "Cercospora and Gray Leaf Spot",
-      hi: "सर्कोस्पोरा और ग्रे लीफ स्पॉट",
-      mr: "सर्कोस्पोरा व ग्रे लीफ स्पॉट",
-    },
+    crop: "Maize",
+    disease: "Cercospora Gray Leaf Spot",
     severity: "Medium",
     severityPercent: 60,
-    recommendation: {
-      en: "Scout leaves regularly, maintain field sanitation, use appropriate crop rotation where practical, and follow locally approved disease-management guidance.",
-      hi: "पत्तियों की नियमित जांच करें, खेत की स्वच्छता बनाए रखें, जहां संभव हो उचित फसल चक्र अपनाएं और स्थानीय रोग प्रबंधन सलाह का पालन करें।",
-      mr: "पानांची नियमित पाहणी करा, शेताची स्वच्छता राखा, शक्य असल्यास योग्य पीक फेरपालट करा आणि स्थानिक रोग व्यवस्थापन सल्ल्याचे पालन करा.",
-    },
+    confidence: 85,
+    recommendation:
+      "Remove infected crop debris where practical, improve field airflow, rotate crops, and use an appropriate fungicide when necessary."
   },
 
   {
     classKey: "Maize_Common_Rust",
-    crop: {
-      en: "Maize",
-      hi: "मक्का",
-      mr: "मका",
-    },
-    disease: {
-      en: "Common Rust",
-      hi: "कॉमन रस्ट",
-      mr: "सामान्य तांबेरा",
-    },
+    crop: "Maize",
+    disease: "Common Rust",
     severity: "Medium",
     severityPercent: 50,
-    recommendation: {
-      en: "Monitor leaves for rust pustules, use healthy seed, maintain good crop management, and follow locally approved disease-management guidance when intervention is justified.",
-      hi: "पत्तियों पर रतुआ के लक्षणों की निगरानी करें, स्वस्थ बीज का उपयोग करें और आवश्यकता होने पर स्थानीय रोग प्रबंधन सलाह का पालन करें।",
-      mr: "पानांवरील तांबेरा रोगाची लक्षणे तपासा, निरोगी बियाणे वापरा आणि गरज असल्यास स्थानिक रोग व्यवस्थापन सल्ल्याचे पालन करा.",
-    },
+    confidence: 85,
+    recommendation:
+      "Monitor rust development, maintain healthy crop nutrition, consider resistant varieties, and apply an appropriate fungicide if infection becomes severe."
   },
 
   {
     classKey: "Maize_Northern_Leaf_Blight",
-    crop: {
-      en: "Maize",
-      hi: "मक्का",
-      mr: "मका",
-    },
-    disease: {
-      en: "Northern Leaf Blight",
-      hi: "नॉर्दर्न लीफ ब्लाइट",
-      mr: "नॉर्दर्न लीफ ब्लाइट",
-    },
+    crop: "Maize",
+    disease: "Northern Leaf Blight",
     severity: "High",
     severityPercent: 70,
-    recommendation: {
-      en: "Inspect leaves regularly for elongated lesions, maintain field sanitation, consider appropriate crop rotation, and use locally approved disease-management options when justified.",
-      hi: "लंबे धब्बों के लिए पत्तियों की नियमित जांच करें, खेत की स्वच्छता बनाए रखें, उचित फसल चक्र अपनाएं और आवश्यकता होने पर स्थानीय रूप से स्वीकृत विकल्पों का उपयोग करें।",
-      mr: "लांबट डागांसाठी पानांची नियमित पाहणी करा, शेताची स्वच्छता राखा, योग्य पीक फेरपालट करा आणि गरज असल्यास स्थानिक मान्य पर्याय वापरा.",
-    },
+    confidence: 85,
+    recommendation:
+      "Remove crop residue where practical, rotate crops, use resistant varieties, and apply a suitable fungicide when disease pressure is high."
   },
 
   {
     classKey: "Maize_Healthy",
-    crop: {
-      en: "Maize",
-      hi: "मक्का",
-      mr: "मका",
-    },
-    disease: {
-      en: "Healthy",
-      hi: "स्वस्थ",
-      mr: "निरोगी",
-    },
+    crop: "Maize",
+    disease: "Healthy",
     severity: "Low",
-    severityPercent: 5,
-    recommendation: {
-      en: "No major disease signs detected. Continue regular scouting, maintain field sanitation and monitor crop growth.",
-      hi: "रोग के कोई प्रमुख लक्षण नहीं पाए गए। नियमित निरीक्षण जारी रखें, खेत की स्वच्छता बनाए रखें और फसल की वृद्धि की निगरानी करें।",
-      mr: "रोगाची ठळक लक्षणे आढळली नाहीत. नियमित पाहणी सुरू ठेवा, शेताची स्वच्छता राखा आणि पिकाच्या वाढीवर लक्ष ठेवा.",
-    },
+    severityPercent: 10,
+    confidence: 95,
+    recommendation:
+      "The crop appears healthy. Continue regular monitoring, balanced fertilization, proper irrigation, and good field hygiene."
   },
-]
-  DISEASE_PROFILES.push(...ADDITIONAL_PROFILES);
-  
+
+  // ----------------------------------------------------------
+  // APPLE
+  // ----------------------------------------------------------
+  {
+    classKey: "Apple_Scab",
+    crop: "Apple",
+    disease: "Apple Scab",
+    severity: "Medium",
+    severityPercent: 60,
+    confidence: 85,
+    recommendation:
+      "Remove infected leaves and fruit, clear fallen leaf debris, improve orchard sanitation, and use an appropriate fungicide when needed."
+  },
+
+  {
+    classKey: "Apple_Black_Rot",
+    crop: "Apple",
+    disease: "Black Rot",
+    severity: "High",
+    severityPercent: 70,
+    confidence: 85,
+    recommendation:
+      "Remove mummified fruit and infected branches, improve orchard sanitation, and prune affected plant material."
+  },
+
+  {
+    classKey: "Apple_Cedar_Rust",
+    crop: "Apple",
+    disease: "Cedar Apple Rust",
+    severity: "Medium",
+    severityPercent: 55,
+    confidence: 85,
+    recommendation:
+      "Remove affected plant material where practical, improve orchard sanitation, and apply an appropriate fungicide during susceptible growth stages."
+  },
+
+  {
+    classKey: "Apple_Healthy",
+    crop: "Apple",
+    disease: "Healthy",
+    severity: "Low",
+    severityPercent: 10,
+    confidence: 95,
+    recommendation:
+      "The apple plant appears healthy. Continue regular inspection, balanced nutrition, proper irrigation, and orchard sanitation."
+  },
+
+  // ----------------------------------------------------------
+  // CHERRY
+  // ----------------------------------------------------------
+  {
+    classKey: "Cherry_Powdery_Mildew",
+    crop: "Cherry",
+    disease: "Powdery Mildew",
+    severity: "Medium",
+    severityPercent: 50,
+    confidence: 85,
+    recommendation:
+      "Improve air circulation, remove heavily affected foliage, avoid excessive humidity, and use an appropriate fungicide when necessary."
+  },
+
+  {
+    classKey: "Cherry_Healthy",
+    crop: "Cherry",
+    disease: "Healthy",
+    severity: "Low",
+    severityPercent: 10,
+    confidence: 95,
+    recommendation:
+      "The cherry plant appears healthy. Continue regular monitoring, adequate irrigation, balanced nutrition, and good orchard hygiene."
+  },
+
+  // ----------------------------------------------------------
+  // GRAPE
+  // ----------------------------------------------------------
+  {
+    classKey: "Grape_Black_Rot",
+    crop: "Grape",
+    disease: "Black Rot",
+    severity: "High",
+    severityPercent: 70,
+    confidence: 85,
+    recommendation:
+      "Remove infected berries and leaves, clear mummified fruit, improve canopy ventilation, and use an appropriate fungicide when required."
+  },
+
+  {
+    classKey: "Grape_Esca",
+    crop: "Grape",
+    disease: "Esca (Black Measles)",
+    severity: "High",
+    severityPercent: 75,
+    confidence: 85,
+    recommendation:
+      "Remove severely affected plant material, maintain good vineyard sanitation, and avoid spreading infection through contaminated pruning tools."
+  },
+
+  {
+    classKey: "Grape_Isariopsis_Leaf_Spot",
+    crop: "Grape",
+    disease: "Isariopsis Leaf Spot",
+    severity: "Medium",
+    severityPercent: 55,
+    confidence: 85,
+    recommendation:
+      "Remove affected leaves, improve canopy airflow, reduce prolonged leaf wetness, and use an appropriate fungicide when needed."
+  },
+
+  {
+    classKey: "Grape_Healthy",
+    crop: "Grape",
+    disease: "Healthy",
+    severity: "Low",
+    severityPercent: 10,
+    confidence: 95,
+    recommendation:
+      "The grape plant appears healthy. Continue regular monitoring, proper irrigation, balanced nutrition, and vineyard sanitation."
+  },
+
+  // ----------------------------------------------------------
+  // PEACH
+  // ----------------------------------------------------------
+  {
+    classKey: "Peach_Bacterial_Spot",
+    crop: "Peach",
+    disease: "Bacterial Spot",
+    severity: "Medium",
+    severityPercent: 55,
+    confidence: 85,
+    recommendation:
+      "Remove severely affected leaves and fruit, improve orchard sanitation, avoid overhead irrigation, and use an appropriate treatment when recommended."
+  },
+
+  {
+    classKey: "Peach_Healthy",
+    crop: "Peach",
+    disease: "Healthy",
+    severity: "Low",
+    severityPercent: 10,
+    confidence: 95,
+    recommendation:
+      "The peach plant appears healthy. Continue regular monitoring, balanced nutrition, proper irrigation, and orchard hygiene."
+  },
+
+  // ----------------------------------------------------------
+  // BELL PEPPER
+  // ----------------------------------------------------------
+  {
+    classKey: "Bell_Pepper_Bacterial_Spot",
+    crop: "Bell Pepper",
+    disease: "Bacterial Spot",
+    severity: "Medium",
+    severityPercent: 55,
+    confidence: 85,
+    recommendation:
+      "Remove infected leaves, avoid overhead irrigation, sanitize tools, maintain good spacing, and use an appropriate treatment if necessary."
+  },
+
+  {
+    classKey: "Bell_Pepper_Healthy",
+    crop: "Bell Pepper",
+    disease: "Healthy",
+    severity: "Low",
+    severityPercent: 10,
+    confidence: 95,
+    recommendation:
+      "The bell pepper plant appears healthy. Continue regular monitoring, proper irrigation, balanced nutrition, and good field hygiene."
+  },
+
+  // ----------------------------------------------------------
+  // STRAWBERRY
+  // ----------------------------------------------------------
+  {
+    classKey: "Strawberry_Leaf_Scorch",
+    crop: "Strawberry",
+    disease: "Leaf Scorch",
+    severity: "Medium",
+    severityPercent: 55,
+    confidence: 85,
+    recommendation:
+      "Remove severely affected leaves, improve airflow, avoid prolonged leaf wetness, and maintain proper field sanitation."
+  },
+
+  {
+    classKey: "Strawberry_Healthy",
+    crop: "Strawberry",
+    disease: "Healthy",
+    severity: "Low",
+    severityPercent: 10,
+    confidence: 95,
+    recommendation:
+      "The strawberry plant appears healthy. Continue regular monitoring, proper irrigation, balanced nutrition, and good field hygiene."
+  }
+];
+
+
+// ============================================================
+// IPM PROFILES
+// ============================================================
+
 const IPM_PROFILES = {
-  Tomato_Early_Blight: {
-    en: {
-      monitoring: [
-        "Scout lower leaves regularly for dark spots and yellowing.",
-        "Pay closer attention after warm, humid or wet weather."
+  "Tomato_Early_Blight": {
+    "en": {
+      "monitoring": [
+        "Scout lower leaves for dark concentric spots, especially after warm/wet weather."
       ],
-      cultural: [
-        "Remove severely affected leaves where practical.",
-        "Avoid prolonged leaf wetness and keep the field well ventilated.",
-        "Maintain good field sanitation."
+      "cultural": [
+        "Remove severely affected leaves, avoid prolonged leaf wetness and overhead irrigation, and keep the field clean."
       ],
-      biological: [
+      "biological": [
         "Prefer locally recommended biological disease-management options where available."
       ],
-      chemical: [
-        "Use a fungicide only when disease pressure justifies treatment and choose a locally approved product for the crop and disease."
+      "chemical": [
+        "Verified: Copper oxychloride 50 WP 3 g/L water (ICAR Kharif Agro-Advisory 2025). TNAU also lists azoxystrobin 23% SC 200 ml/acre and mancozeb 35% SC 1 kg/acre. Use only currently registered/recommended products and follow the label."
       ],
-      safety: [
-        "Follow the product label, approved dose, waiting period and required protective equipment."
+      "safety": [
+        "Follow the product label, approved dose, PHI and required PPE."
       ]
     },
-
-    hi: {
-      monitoring: [
-        "निचली पत्तियों पर नियमित रूप से काले धब्बे और पीलापन देखें।",
-        "गर्म, नम या बारिश वाले मौसम के बाद विशेष निगरानी करें।"
+    "hi": {
+      "monitoring": [
+        "गहरे गोलाकार छल्लेदार धब्बे की नियमित जांच करें, खासकर अनुकूल मौसम में."
       ],
-      cultural: [
-        "जहां संभव हो, अधिक प्रभावित पत्तियों को हटाएं।",
-        "पत्तियों के लंबे समय तक गीले रहने से बचें और खेत में अच्छा वेंटिलेशन रखें।",
-        "खेत की स्वच्छता बनाए रखें।"
+      "cultural": [
+        "संक्रमित हिस्से हटाएं, स्वच्छता बनाए रखें और पत्तियों का लंबे समय तक गीला रहना कम करें।"
       ],
-      biological: [
-        "जहां उपलब्ध हो, स्थानीय रूप से अनुशंसित जैविक रोग प्रबंधन विकल्पों को प्राथमिकता दें।"
+      "biological": [
+        "जहां उपलब्ध हो, इस टमाटर में अगेती झुलसा के लिए स्थानीय रूप से अनुशंसित जैविक नियंत्रण विकल्पों को प्राथमिकता दें।"
       ],
-      chemical: [
-        "उपचार की आवश्यकता होने पर ही फफूंदनाशक का उपयोग करें और फसल व रोग के लिए स्थानीय रूप से स्वीकृत उत्पाद चुनें।"
+      "chemical": [
+        "सत्यापित: Copper oxychloride 50 WP — 3 ग्राम/लीटर पानी (ICAR Kharif Agro-Advisory 2025)। TNAU में azoxystrobin 23% SC — 200 मिली/एकड़ और mancozeb 35% SC — 1 किग्रा/एकड़ भी सूचीबद्ध हैं। केवल वर्तमान में स्वीकृत लेबल के अनुसार उपयोग करें।"
       ],
-      safety: [
-        "लेबल, स्वीकृत मात्रा, प्रतीक्षा अवधि और आवश्यक सुरक्षा उपकरणों का पालन करें।"
+      "safety": [
+        "वर्तमान उत्पाद लेबल, स्वीकृत मात्रा, कटाई-पूर्व प्रतीक्षा अवधि/पुनःप्रवेश अवधि और आवश्यक सुरक्षा उपकरणों का पालन करें।"
       ]
     },
-
-    mr: {
-      monitoring: [
-        "खालच्या पानांवर काळे डाग आणि पिवळेपणा नियमितपणे तपासा.",
-        "उष्ण, दमट किंवा पावसाळी हवामानानंतर अधिक काळजीपूर्वक पाहणी करा."
+    "mr": {
+      "monitoring": [
+        "गडद गोलाकार वलय असलेले डाग साठी नियमित पाहणी करा, विशेषतः अनुकूल हवामानात."
       ],
-      cultural: [
-        "शक्य असल्यास जास्त बाधित पाने काढून टाका.",
-        "पानांवर दीर्घकाळ ओलावा राहू देऊ नका आणि शेतात चांगले वायुवीजन ठेवा.",
-        "शेताची स्वच्छता राखा."
+      "cultural": [
+        "बाधित भाग काढा, स्वच्छता राखा आणि पाने जास्त वेळ ओलसर राहणे कमी करा."
       ],
-      biological: [
-        "उपलब्ध असल्यास स्थानिक शिफारसीनुसार जैविक रोग व्यवस्थापन पर्यायांना प्राधान्य द्या."
+      "biological": [
+        "उपलब्ध असल्यास या टोमॅटोतील अर्ली ब्लाइट साठी स्थानिक शिफारसीनुसार जैविक नियंत्रण पर्यायांना प्राधान्य द्या."
       ],
-      chemical: [
-        "उपचाराची गरज असल्यासच बुरशीनाशक वापरा आणि पिकासाठी व रोगासाठी स्थानिक मान्य उत्पादन निवडा."
+      "chemical": [
+        "सत्यापित: Copper oxychloride 50 WP — 3 ग्रॅम/लिटर पाणी (ICAR Kharif Agro-Advisory 2025). TNAU मध्ये azoxystrobin 23% SC — 200 मिली/एकर आणि mancozeb 35% SC — 1 किलो/एकरही दिले आहेत. फक्त सध्याच्या मान्य लेबलनुसार वापरा."
       ],
-      safety: [
-        "लेबल, मान्य मात्रा, प्रतीक्षा कालावधी आणि आवश्यक सुरक्षा साधनांचे पालन करा."
+      "safety": [
+        "सध्याचे उत्पादन लेबल, मान्य मात्रा, काढणीपूर्व प्रतीक्षा कालावधी/पुन्हा प्रवेश कालावधी आणि आवश्यक सुरक्षा साधनांचे पालन करा."
       ]
     }
   },
-
-  Potato_Late_Blight: {
-    en: {
-      monitoring: [
-        "Inspect leaves and stems frequently for dark lesions and rapid disease spread.",
-        "Increase scouting after rainy, cool or humid conditions."
+  "Tomato_Bacterial_Spot": {
+    "en": {
+      "monitoring": [
+        "Scout regularly for small dark/water-soaked spots."
       ],
-      cultural: [
-        "Remove badly affected plant material where practical.",
-        "Reduce prolonged leaf wetness and maintain field sanitation.",
-        "Avoid unnecessary irrigation during wet conditions."
+      "cultural": [
+        "Remove severely affected material where practical; improve sanitation and avoid conditions that prolong leaf wetness when relevant."
       ],
-      biological: [
-        "Use locally recommended biological or preventive disease-management options where suitable."
+      "biological": [
+        "Use locally recommended biological options for this bacterial disease where available."
       ],
-      chemical: [
-        "When treatment is justified, use only a locally approved fungicide strategy appropriate for potato late blight."
+      "chemical": [
+        "Verified source to use cautiously: TNAU lists streptocycline guidance for tomato bacterial spot; because product registration/formulation can change, show the published rate only with a current label check."
       ],
-      safety: [
-        "Follow the product label, approved dose, pre-harvest interval and protective-equipment requirements."
+      "safety": [
+        "Follow the current product label, approved dose, PHI/re-entry requirements and required PPE."
       ]
     },
-
-    hi: {
-      monitoring: [
-        "पत्तियों और तनों पर गहरे धब्बों तथा तेजी से फैलते रोग के लक्षणों की नियमित जांच करें।",
-        "बारिश, ठंडे या नम मौसम के बाद अधिक निगरानी करें।"
+    "hi": {
+      "monitoring": [
+        "छोटे गहरे या पानी जैसे धब्बे की नियमित जांच करें, खासकर अनुकूल मौसम में."
       ],
-      cultural: [
-        "जहां संभव हो, बहुत अधिक प्रभावित पौधों के हिस्से हटा दें।",
-        "पत्तियों के लंबे समय तक गीले रहने को कम करें और खेत की स्वच्छता बनाए रखें।",
-        "गीली परिस्थितियों में अनावश्यक सिंचाई से बचें।"
+      "cultural": [
+        "संक्रमित हिस्से हटाएं, स्वच्छता बनाए रखें और पत्तियों का लंबे समय तक गीला रहना कम करें।"
       ],
-      biological: [
-        "जहां उपयुक्त हो, स्थानीय रूप से अनुशंसित जैविक या निवारक रोग-प्रबंधन विकल्पों का उपयोग करें।"
+      "biological": [
+        "जहां उपलब्ध हो, इस जीवाणुजनित समस्या के लिए स्थानीय रूप से अनुशंसित जैविक/प्रतिरोधी प्रबंधन अपनाएं।"
       ],
-      chemical: [
-        "जब उपचार आवश्यक हो, तभी आलू के पछेती झुलसा के लिए स्थानीय रूप से स्वीकृत फफूंदनाशक रणनीति अपनाएं।"
+      "chemical": [
+        "इस रोग के लिए वर्तमान भारत-विशिष्ट सत्यापित मात्रा उपलब्ध नहीं है। केवल वर्तमान स्वीकृत लेबल के अनुसार उपचार करें।"
       ],
-      safety: [
-        "लेबल, स्वीकृत मात्रा, कटाई से पहले की प्रतीक्षा अवधि और सुरक्षा उपकरणों की आवश्यकताओं का पालन करें।"
+      "safety": [
+        "वर्तमान उत्पाद लेबल, स्वीकृत मात्रा, कटाई-पूर्व प्रतीक्षा अवधि/पुनःप्रवेश अवधि और आवश्यक सुरक्षा उपकरणों का पालन करें।"
       ]
     },
-
-    mr: {
-      monitoring: [
-        "पाने आणि खोडांवर काळे डाग व रोगाचा जलद प्रसार यासाठी नियमित पाहणी करा.",
-        "पाऊस, थंड किंवा दमट हवामानानंतर अधिक काळजीपूर्वक पाहणी करा."
+    "mr": {
+      "monitoring": [
+        "लहान गडद किंवा पाण्यासारखे डाग साठी नियमित पाहणी करा, विशेषतः अनुकूल हवामानात."
       ],
-      cultural: [
-        "शक्य असल्यास जास्त बाधित वनस्पती भाग काढून टाका.",
-        "पाने जास्त वेळ ओलसर राहू देऊ नका आणि शेताची स्वच्छता राखा.",
-        "ओलसर परिस्थितीत अनावश्यक सिंचन टाळा."
+      "cultural": [
+        "बाधित भाग काढा, स्वच्छता राखा आणि पाने जास्त वेळ ओलसर राहणे कमी करा."
       ],
-      biological: [
-        "योग्य असल्यास स्थानिक शिफारसीनुसार जैविक किंवा प्रतिबंधात्मक रोग व्यवस्थापन पर्याय वापरा."
+      "biological": [
+        "उपलब्ध असल्यास या जिवाणूजन्य समस्येसाठी स्थानिक शिफारसीनुसार जैविक/प्रतिरोधक व्यवस्थापन वापरा."
       ],
-      chemical: [
-        "उपचार आवश्यक असल्यासच बटाट्याच्या उशिरा करप्यासाठी स्थानिक मान्य बुरशीनाशक व्यवस्थापन पद्धत वापरा."
+      "chemical": [
+        "या रोगासाठी सध्याची भारत-विशिष्ट सत्यापित मात्रा उपलब्ध नाही. फक्त सध्याच्या मान्य लेबलनुसार उपचार करा."
       ],
-      safety: [
-        "लेबल, मान्य मात्रा, काढणीपूर्व प्रतीक्षा कालावधी आणि आवश्यक सुरक्षा साधनांचे पालन करा."
+      "safety": [
+        "सध्याचे उत्पादन लेबल, मान्य मात्रा, काढणीपूर्व प्रतीक्षा कालावधी/पुन्हा प्रवेश कालावधी आणि आवश्यक सुरक्षा साधनांचे पालन करा."
       ]
     }
   },
-
-  Tomato_Leaf_Curl_Virus: {
-    en: {
-      monitoring: [
-        "Scout young leaves regularly for curling, yellowing and stunted growth.",
-        "Check plants for whitefly activity."
+  "Tomato_Late_Blight": {
+    "en": {
+      "monitoring": [
+        "Scout regularly for dark water-soaked lesions and rapid spread."
       ],
-      cultural: [
-        "Remove severely affected plants where practical to reduce spread.",
-        "Keep the field free from weeds that can support insect populations.",
-        "Use healthy planting material."
+      "cultural": [
+        "Remove severely affected material where practical; improve sanitation and avoid conditions that prolong leaf wetness when relevant."
       ],
-      biological: [
-        "Prefer locally recommended biological whitefly-management options where available."
+      "biological": [
+        "Use locally recommended biological options for this fungal disease where available."
       ],
-      chemical: [
-        "Use insect-control products only when justified and only those locally approved for the crop and target pest."
+      "chemical": [
+        "Verified: cyazofamid 34.5% SC 80 ml/acre, azoxystrobin 23% SC 200 ml/acre, or mancozeb 35% SC 1,000 g/acre (TNAU). Use only current approved label directions."
       ],
-      safety: [
-        "Follow the label, approved dose, re-entry requirements and protective-equipment instructions."
+      "safety": [
+        "Follow the current product label, approved dose, PHI/re-entry requirements and required PPE."
       ]
     },
-
-    hi: {
-      monitoring: [
-        "नई पत्तियों में मरोड़, पीलापन और कमजोर वृद्धि की नियमित जांच करें।",
-        "पौधों पर सफेद मक्खी की गतिविधि देखें।"
+    "hi": {
+      "monitoring": [
+        "गहरे पानी जैसे धब्बे और तेजी से फैलाव की नियमित जांच करें, खासकर अनुकूल मौसम में."
       ],
-      cultural: [
-        "जहां संभव हो, गंभीर रूप से प्रभावित पौधों को हटा दें।",
-        "ऐसी खरपतवारों को नियंत्रित रखें जो कीटों को आश्रय दे सकती हैं।",
-        "स्वस्थ रोपण सामग्री का उपयोग करें।"
+      "cultural": [
+        "संक्रमित हिस्से हटाएं, स्वच्छता बनाए रखें और पत्तियों का लंबे समय तक गीला रहना कम करें।"
       ],
-      biological: [
-        "जहां उपलब्ध हो, सफेद मक्खी नियंत्रण के स्थानीय अनुशंसित जैविक विकल्पों को प्राथमिकता दें।"
+      "biological": [
+        "जहां उपलब्ध हो, इस टमाटर में पछेती झुलसा के लिए स्थानीय रूप से अनुशंसित जैविक नियंत्रण विकल्पों को प्राथमिकता दें।"
       ],
-      chemical: [
-        "कीट नियंत्रण उत्पाद का उपयोग तभी करें जब आवश्यक हो और फसल तथा लक्षित कीट के लिए स्थानीय रूप से स्वीकृत उत्पाद ही चुनें।"
+      "chemical": [
+        "सत्यापित TNAU विकल्प: cyazofamid 34.5% SC — 80 मिली/एकड़, azoxystrobin 23% SC — 200 मिली/एकड़ या mancozeb 35% SC — 1,000 ग्राम/एकड़। केवल वर्तमान में स्वीकृत लेबल के अनुसार उपयोग करें।"
       ],
-      safety: [
-        "लेबल, स्वीकृत मात्रा, पुनःप्रवेश अवधि और सुरक्षा उपकरण संबंधी निर्देशों का पालन करें।"
+      "safety": [
+        "वर्तमान उत्पाद लेबल, स्वीकृत मात्रा, कटाई-पूर्व प्रतीक्षा अवधि/पुनःप्रवेश अवधि और आवश्यक सुरक्षा उपकरणों का पालन करें।"
       ]
     },
-
-    mr: {
-      monitoring: [
-        "नवीन पानांमध्ये कुरळेपणा, पिवळेपणा आणि खुंटलेली वाढ यासाठी नियमित पाहणी करा.",
-        "पांढऱ्या माशीची हालचाल तपासा."
+    "mr": {
+      "monitoring": [
+        "गडद पाण्यासारखे डाग आणि जलद फैलाव साठी नियमित पाहणी करा, विशेषतः अनुकूल हवामानात."
       ],
-      cultural: [
-        "शक्य असल्यास जास्त बाधित झाडे काढून टाका.",
-        "कीटकांना आश्रय देणाऱ्या तणांचे नियंत्रण ठेवा.",
-        "निरोगी लागवड साहित्य वापरा."
+      "cultural": [
+        "बाधित भाग काढा, स्वच्छता राखा आणि पाने जास्त वेळ ओलसर राहणे कमी करा."
       ],
-      biological: [
-        "उपलब्ध असल्यास पांढऱ्या माशीच्या नियंत्रणासाठी स्थानिक शिफारसीनुसार जैविक पर्यायांना प्राधान्य द्या."
+      "biological": [
+        "उपलब्ध असल्यास या टोमॅटोतील उशिरा करपा साठी स्थानिक शिफारसीनुसार जैविक नियंत्रण पर्यायांना प्राधान्य द्या."
       ],
-      chemical: [
-        "कीटक नियंत्रणासाठी उपचाराची गरज असल्यासच स्थानिक मान्य आणि लक्ष्यित कीटकासाठी योग्य उत्पादन वापरा."
+      "chemical": [
+        "सत्यापित TNAU पर्याय: cyazofamid 34.5% SC — 80 मिली/एकर, azoxystrobin 23% SC — 200 मिली/एकर किंवा mancozeb 35% SC — 1,000 ग्रॅम/एकर. फक्त सध्याच्या मान्य लेबलनुसार वापरा."
       ],
-      safety: [
-        "लेबल, मान्य मात्रा, पुन्हा प्रवेश कालावधी आणि सुरक्षा साधनांच्या सूचनांचे पालन करा."
+      "safety": [
+        "सध्याचे उत्पादन लेबल, मान्य मात्रा, काढणीपूर्व प्रतीक्षा कालावधी/पुन्हा प्रवेश कालावधी आणि आवश्यक सुरक्षा साधनांचे पालन करा."
       ]
     }
   },
-    Potato_Early_Blight: {
-    en: {
-      monitoring: [
-        "Inspect lower and older leaves regularly for dark brown spots and yellowing.",
-        "Increase scouting during warm, humid or wet weather."
+  "Tomato_Leaf_Mold": {
+    "en": {
+      "monitoring": [
+        "Scout regularly for olive/gray mold under older leaves."
       ],
-      cultural: [
-        "Remove severely affected leaves where practical.",
-        "Maintain good field sanitation and remove crop debris.",
-        "Avoid prolonged leaf wetness and unnecessary overhead irrigation."
+      "cultural": [
+        "Remove severely affected material where practical; improve sanitation and avoid conditions that prolong leaf wetness when relevant."
       ],
-      biological: [
-        "Prefer locally recommended biological disease-management options where available."
+      "biological": [
+        "Use locally recommended biological options for this fungal disease where available."
       ],
-      chemical: [
-        "When treatment is justified, use only a locally approved fungicide strategy appropriate for potato early blight."
+      "chemical": [
+        "No verified current Indian dose added here; use only a currently approved tomato leaf-mold fungicide according to its label."
       ],
-      safety: [
-        "Follow the product label, approved dose, pre-harvest interval and required protective equipment."
+      "safety": [
+        "Follow the current product label, approved dose, PHI/re-entry requirements and required PPE."
       ]
     },
-
-    hi: {
-      monitoring: [
-        "पुरानी और निचली पत्तियों पर गहरे भूरे धब्बों और पीलापन की नियमित जांच करें।",
-        "गर्म, नम या बारिश वाले मौसम में अधिक निगरानी करें।"
+    "hi": {
+      "monitoring": [
+        "पुरानी पत्तियों के नीचे जैतूनी/धूसर फफूंदी की नियमित जांच करें, खासकर अनुकूल मौसम में."
       ],
-      cultural: [
-        "जहां संभव हो, अधिक प्रभावित पत्तियों को हटा दें।",
-        "खेत की स्वच्छता बनाए रखें और फसल के अवशेष हटाएं।",
-        "पत्तियों के लंबे समय तक गीले रहने और अनावश्यक ऊपर से सिंचाई से बचें।"
+      "cultural": [
+        "संक्रमित हिस्से हटाएं, स्वच्छता बनाए रखें और पत्तियों का लंबे समय तक गीला रहना कम करें।"
       ],
-      biological: [
-        "जहां उपलब्ध हो, स्थानीय रूप से अनुशंसित जैविक रोग-प्रबंधन विकल्पों को प्राथमिकता दें।"
+      "biological": [
+        "जहां उपलब्ध हो, इस टमाटर में पत्ती फफूंदी के लिए स्थानीय रूप से अनुशंसित जैविक नियंत्रण विकल्पों को प्राथमिकता दें।"
       ],
-      chemical: [
-        "जब उपचार आवश्यक हो, तभी आलू के अगेती झुलसा के लिए स्थानीय रूप से स्वीकृत फफूंदनाशक रणनीति अपनाएं।"
+      "chemical": [
+        "इस रोग के लिए वर्तमान भारत-विशिष्ट सत्यापित मात्रा उपलब्ध नहीं है। केवल वर्तमान में स्वीकृत उत्पाद और लेबल निर्देशों का उपयोग करें।"
       ],
-      safety: [
-        "लेबल, स्वीकृत मात्रा, कटाई से पहले की प्रतीक्षा अवधि और आवश्यक सुरक्षा उपकरणों का पालन करें।"
+      "safety": [
+        "वर्तमान उत्पाद लेबल, स्वीकृत मात्रा, कटाई-पूर्व प्रतीक्षा अवधि/पुनःप्रवेश अवधि और आवश्यक सुरक्षा उपकरणों का पालन करें।"
       ]
     },
-
-    mr: {
-      monitoring: [
-        "जुन्या आणि खालच्या पानांवर काळसर तपकिरी डाग व पिवळेपणा यासाठी नियमित पाहणी करा.",
-        "उष्ण, दमट किंवा पावसाळी हवामानात अधिक काळजीपूर्वक पाहणी करा."
+    "mr": {
+      "monitoring": [
+        "जुन्या पानांच्या खालच्या बाजूस ऑलिव्ह/करड्या बुरशीची वाढ साठी नियमित पाहणी करा, विशेषतः अनुकूल हवामानात."
       ],
-      cultural: [
-        "शक्य असल्यास जास्त बाधित पाने काढून टाका.",
-        "शेताची स्वच्छता राखा आणि पिकांचे अवशेष काढून टाका.",
-        "पाने जास्त वेळ ओलसर राहणे आणि अनावश्यक वरून सिंचन करणे टाळा."
+      "cultural": [
+        "बाधित भाग काढा, स्वच्छता राखा आणि पाने जास्त वेळ ओलसर राहणे कमी करा."
       ],
-      biological: [
-        "उपलब्ध असल्यास स्थानिक शिफारसीनुसार जैविक रोग व्यवस्थापन पर्यायांना प्राधान्य द्या."
+      "biological": [
+        "उपलब्ध असल्यास या टोमॅटोतील पानावरील बुरशी साठी स्थानिक शिफारसीनुसार जैविक नियंत्रण पर्यायांना प्राधान्य द्या."
       ],
-      chemical: [
-        "उपचार आवश्यक असल्यासच बटाट्याच्या लवकर करप्यासाठी स्थानिक मान्य बुरशीनाशक व्यवस्थापन पद्धत वापरा."
+      "chemical": [
+        "या रोगासाठी सध्याची भारत-विशिष्ट सत्यापित मात्रा उपलब्ध नाही. फक्त सध्या मान्य उत्पादन आणि लेबल सूचनांनुसार वापरा."
       ],
-      safety: [
-        "लेबल, मान्य मात्रा, काढणीपूर्व प्रतीक्षा कालावधी आणि आवश्यक सुरक्षा साधनांचे पालन करा."
+      "safety": [
+        "सध्याचे उत्पादन लेबल, मान्य मात्रा, काढणीपूर्व प्रतीक्षा कालावधी/पुन्हा प्रवेश कालावधी आणि आवश्यक सुरक्षा साधनांचे पालन करा."
       ]
     }
   },
-
-  Potato_Healthy: {
-    en: {
-      monitoring: [
-        "Continue regular scouting for leaf spots, discoloration, wilting or unusual plant growth.",
-        "Monitor the crop more closely after prolonged wet or stressful weather."
+  "Tomato_Septoria_Leaf_Spot": {
+    "en": {
+      "monitoring": [
+        "Scout regularly for small circular spots with dark centers."
       ],
-      cultural: [
-        "Maintain good field sanitation.",
-        "Use healthy planting material and maintain appropriate irrigation.",
-        "Remove unusual or severely damaged plant material where practical."
+      "cultural": [
+        "Remove severely affected material where practical; improve sanitation and avoid conditions that prolong leaf wetness when relevant."
       ],
-      biological: [],
-      chemical: [],
-      safety: [
-        "Do not apply disease-control products unless a disease or pest problem is identified and treatment is justified."
+      "biological": [
+        "Use locally recommended biological options for this fungal disease where available."
+      ],
+      "chemical": [
+        "Verified: fluxapyroxad 250 g/L + pyraclostrobin 250 g/L SC 200–250 ml/ha (TNAU). Check the current label before use."
+      ],
+      "safety": [
+        "Follow the current product label, approved dose, PHI/re-entry requirements and required PPE."
       ]
     },
-
-    hi: {
-      monitoring: [
-        "पत्तियों पर धब्बे, रंग में बदलाव, मुरझाना या असामान्य वृद्धि के लिए नियमित निरीक्षण जारी रखें।",
-        "लंबे समय तक गीले या तनावपूर्ण मौसम के बाद फसल की अधिक निगरानी करें।"
+    "hi": {
+      "monitoring": [
+        "छोटे गोल धब्बे और गहरे केंद्र की नियमित जांच करें, खासकर अनुकूल मौसम में."
       ],
-      cultural: [
-        "खेत की स्वच्छता बनाए रखें।",
-        "स्वस्थ रोपण सामग्री का उपयोग करें और उचित सिंचाई बनाए रखें।",
-        "जहां संभव हो, असामान्य या गंभीर रूप से क्षतिग्रस्त पौधों के हिस्सों को हटा दें।"
+      "cultural": [
+        "संक्रमित हिस्से हटाएं, स्वच्छता बनाए रखें और पत्तियों का लंबे समय तक गीला रहना कम करें।"
       ],
-      biological: [],
-      chemical: [],
-      safety: [
-        "जब तक किसी रोग या कीट की पहचान न हो और उपचार आवश्यक न हो, रोग-नियंत्रण उत्पादों का उपयोग न करें।"
+      "biological": [
+        "जहां उपलब्ध हो, इस टमाटर में सेप्टोरिया पत्ती धब्बा के लिए स्थानीय रूप से अनुशंसित जैविक नियंत्रण विकल्पों को प्राथमिकता दें।"
+      ],
+      "chemical": [
+        "सत्यापित TNAU विकल्प: fluxapyroxad 250 g/L + pyraclostrobin 250 g/L SC — 200–250 मिली/हेक्टेयर। उपयोग से पहले वर्तमान पंजीकृत लेबल जांचें।"
+      ],
+      "safety": [
+        "वर्तमान उत्पाद लेबल, स्वीकृत मात्रा, कटाई-पूर्व प्रतीक्षा अवधि/पुनःप्रवेश अवधि और आवश्यक सुरक्षा उपकरणों का पालन करें।"
       ]
     },
-
-    mr: {
-      monitoring: [
-        "पानांवरील डाग, रंगातील बदल, कोमेजणे किंवा असामान्य वाढ यासाठी नियमित पाहणी सुरू ठेवा.",
-        "दीर्घकाळ ओलसर किंवा प्रतिकूल हवामानानंतर पिकाची अधिक काळजीपूर्वक पाहणी करा."
+    "mr": {
+      "monitoring": [
+        "लहान गोल डाग आणि काळसर केंद्र साठी नियमित पाहणी करा, विशेषतः अनुकूल हवामानात."
       ],
-      cultural: [
-        "शेताची स्वच्छता राखा.",
-        "निरोगी लागवड साहित्य वापरा आणि योग्य सिंचन ठेवा.",
-        "शक्य असल्यास असामान्य किंवा जास्त नुकसान झालेल्या वनस्पतींचे भाग काढून टाका."
+      "cultural": [
+        "बाधित भाग काढा, स्वच्छता राखा आणि पाने जास्त वेळ ओलसर राहणे कमी करा."
       ],
-      biological: [],
-      chemical: [],
-      safety: [
-        "रोग किंवा कीड ओळखली गेली नसेल आणि उपचाराची गरज नसेल तर रोगनियंत्रणासाठी उत्पादने वापरू नका."
+      "biological": [
+        "उपलब्ध असल्यास या टोमॅटोतील सेप्टोरिया पानावरील डाग साठी स्थानिक शिफारसीनुसार जैविक नियंत्रण पर्यायांना प्राधान्य द्या."
+      ],
+      "chemical": [
+        "सत्यापित TNAU पर्याय: fluxapyroxad 250 g/L + pyraclostrobin 250 g/L SC — 200–250 मिली/हेक्टर. वापरण्यापूर्वी सध्याचे नोंदणीकृत लेबल तपासा."
+      ],
+      "safety": [
+        "सध्याचे उत्पादन लेबल, मान्य मात्रा, काढणीपूर्व प्रतीक्षा कालावधी/पुन्हा प्रवेश कालावधी आणि आवश्यक सुरक्षा साधनांचे पालन करा."
       ]
     }
   },
-
-  Wheat_Healthy: {
-    en: {
-      monitoring: [
-        "Inspect the crop regularly for leaf spots, rust symptoms, discoloration and unusual growth.",
-        "Increase scouting when weather conditions become favorable for disease development."
+  "Tomato_Spider_Mites": {
+    "en": {
+      "monitoring": [
+        "Scout regularly for fine webbing and bronzing on leaf undersides."
       ],
-      cultural: [
-        "Maintain good field sanitation.",
-        "Use healthy seed and follow appropriate crop-management practices.",
-        "Avoid unnecessary irrigation that keeps foliage wet for long periods."
+      "cultural": [
+        "Remove severely affected material where practical; improve sanitation and avoid conditions that prolong leaf wetness when relevant."
       ],
-      biological: [],
-      chemical: [],
-      safety: [
-        "Use crop-protection products only when a problem is identified and treatment is justified."
+      "biological": [
+        "Use locally recommended biological options for this mite pest where available."
+      ],
+      "chemical": [
+        "Verified: wettable sulphur 50 WP 2 g/L water (TNAU). Use only when mites are present and follow the current label."
+      ],
+      "safety": [
+        "Follow the current product label, approved dose, PHI/re-entry requirements and required PPE."
       ]
     },
-
-    hi: {
-      monitoring: [
-        "पत्तियों पर धब्बे, रतुआ के लक्षण, रंग में बदलाव और असामान्य वृद्धि की नियमित जांच करें।",
-        "रोग के लिए अनुकूल मौसम होने पर अधिक निगरानी करें।"
+    "hi": {
+      "monitoring": [
+        "पत्तियों के नीचे बारीक जाला और कांस्य रंग की नियमित जांच करें, खासकर अनुकूल मौसम में."
       ],
-      cultural: [
-        "खेत की स्वच्छता बनाए रखें।",
-        "स्वस्थ बीज का उपयोग करें और उचित फसल प्रबंधन अपनाएं।",
-        "ऐसी अनावश्यक सिंचाई से बचें जिससे पत्तियां लंबे समय तक गीली रहें।"
+      "cultural": [
+        "पौधों में उचित नमी बनाए रखें, प्रभावित पत्तियां हटाएं और अनावश्यक व्यापक-स्पेक्ट्रम कीटनाशकों से बचें।"
       ],
-      biological: [],
-      chemical: [],
-      safety: [
-        "फसल-सुरक्षा उत्पादों का उपयोग तभी करें जब समस्या की पहचान हो और उपचार आवश्यक हो।"
+      "biological": [
+        "जहां उपलब्ध हो, इस टमाटर में स्पाइडर माइट्स के लिए स्थानीय रूप से अनुशंसित जैविक नियंत्रण विकल्पों को प्राथमिकता दें।"
+      ],
+      "chemical": [
+        "सत्यापित TNAU विकल्प: wettable sulphur 50 WP — 2 ग्राम/लीटर पानी। केवल माइट्स मौजूद होने पर और वर्तमान लेबल के अनुसार उपयोग करें।"
+      ],
+      "safety": [
+        "वर्तमान उत्पाद लेबल, स्वीकृत मात्रा, कटाई-पूर्व प्रतीक्षा अवधि/पुनःप्रवेश अवधि और आवश्यक सुरक्षा उपकरणों का पालन करें।"
       ]
     },
-
-    mr: {
-      monitoring: [
-        "पानांवरील डाग, तांबेरा रोगाची लक्षणे, रंगातील बदल आणि असामान्य वाढ यासाठी नियमित पाहणी करा.",
-        "रोगासाठी अनुकूल हवामान असल्यास अधिक काळजीपूर्वक पाहणी करा."
+    "mr": {
+      "monitoring": [
+        "पानांच्या खालच्या बाजूस बारीक जाळे आणि कांस्य रंग साठी नियमित पाहणी करा, विशेषतः अनुकूल हवामानात."
       ],
-      cultural: [
-        "शेताची स्वच्छता राखा.",
-        "निरोगी बियाणे वापरा आणि योग्य पीक व्यवस्थापन पद्धती पाळा.",
-        "पाने जास्त वेळ ओलसर ठेवणारे अनावश्यक सिंचन टाळा."
+      "cultural": [
+        "पिकात योग्य ओलावा राखा, जास्त बाधित पाने काढा आणि अनावश्यक व्यापक-स्पेक्ट्रम कीटकनाशके टाळा."
       ],
-      biological: [],
-      chemical: [],
-      safety: [
-        "समस्या ओळखली गेली असेल आणि उपचाराची गरज असेल तेव्हाच पीक संरक्षण उत्पादने वापरा."
+      "biological": [
+        "उपलब्ध असल्यास या टोमॅटोतील कोळी कीड साठी स्थानिक शिफारसीनुसार जैविक नियंत्रण पर्यायांना प्राधान्य द्या."
+      ],
+      "chemical": [
+        "सत्यापित TNAU पर्याय: wettable sulphur 50 WP — 2 ग्रॅम/लिटर पाणी. कोळी कीड उपस्थित असल्यासच आणि सध्याच्या लेबलनुसार वापरा."
+      ],
+      "safety": [
+        "सध्याचे उत्पादन लेबल, मान्य मात्रा, काढणीपूर्व प्रतीक्षा कालावधी/पुन्हा प्रवेश कालावधी आणि आवश्यक सुरक्षा साधनांचे पालन करा."
       ]
     }
   },
-
-  Cotton_Bacterial_Blight: {
-    en: {
-      monitoring: [
-        "Inspect leaves regularly for water-soaked spots, dark lesions and spreading symptoms.",
-        "Increase scouting after rainy, warm or humid conditions."
+  "Tomato_Target_Spot": {
+    "en": {
+      "monitoring": [
+        "Scout regularly for enlarging target-like leaf lesions."
       ],
-      cultural: [
-        "Remove severely affected plant material where practical.",
-        "Maintain good field sanitation and manage crop residues appropriately.",
-        "Avoid unnecessary irrigation and prolonged leaf wetness."
+      "cultural": [
+        "Remove severely affected material where practical; improve sanitation and avoid conditions that prolong leaf wetness when relevant."
       ],
-      biological: [
-        "Prefer locally recommended biological or preventive disease-management options where available."
+      "biological": [
+        "Use locally recommended biological options for this fungal disease where available."
       ],
-      chemical: [
-        "When treatment is justified, use only a locally approved disease-management product appropriate for cotton."
+      "chemical": [
+        "No verified current Indian dose added here; use only an approved tomato target-spot fungicide according to the current label."
       ],
-      safety: [
-        "Follow the product label, approved dose, waiting period and required protective equipment."
+      "safety": [
+        "Follow the current product label, approved dose, PHI/re-entry requirements and required PPE."
       ]
     },
-
-    hi: {
-      monitoring: [
-        "पत्तियों पर पानी जैसे धब्बे, गहरे घाव और फैलते हुए लक्षणों की नियमित जांच करें।",
-        "बारिश, गर्म या नम मौसम के बाद अधिक निगरानी करें।"
+    "hi": {
+      "monitoring": [
+        "बढ़ते हुए लक्ष्य जैसे गोल धब्बे की नियमित जांच करें, खासकर अनुकूल मौसम में."
       ],
-      cultural: [
-        "जहां संभव हो, गंभीर रूप से प्रभावित पौधों के हिस्सों को हटा दें।",
-        "खेत की स्वच्छता बनाए रखें और फसल अवशेषों का उचित प्रबंधन करें।",
-        "अनावश्यक सिंचाई और पत्तियों के लंबे समय तक गीले रहने से बचें।"
+      "cultural": [
+        "संक्रमित हिस्से हटाएं, स्वच्छता बनाए रखें और पत्तियों का लंबे समय तक गीला रहना कम करें।"
       ],
-      biological: [
-        "जहां उपलब्ध हो, स्थानीय रूप से अनुशंसित जैविक या निवारक रोग-प्रबंधन विकल्पों को प्राथमिकता दें।"
+      "biological": [
+        "जहां उपलब्ध हो, इस टमाटर में टार्गेट स्पॉट के लिए स्थानीय रूप से अनुशंसित जैविक नियंत्रण विकल्पों को प्राथमिकता दें।"
       ],
-      chemical: [
-        "जब उपचार आवश्यक हो, तभी कपास के लिए स्थानीय रूप से स्वीकृत और रोग के लिए उपयुक्त उत्पाद का उपयोग करें।"
+      "chemical": [
+        "इस रोग के लिए वर्तमान भारत-विशिष्ट सत्यापित मात्रा उपलब्ध नहीं है। केवल वर्तमान में स्वीकृत उत्पाद और लेबल निर्देशों का उपयोग करें।"
       ],
-      safety: [
-        "लेबल, स्वीकृत मात्रा, प्रतीक्षा अवधि और आवश्यक सुरक्षा उपकरणों का पालन करें।"
+      "safety": [
+        "वर्तमान उत्पाद लेबल, स्वीकृत मात्रा, कटाई-पूर्व प्रतीक्षा अवधि/पुनःप्रवेश अवधि और आवश्यक सुरक्षा उपकरणों का पालन करें।"
       ]
     },
-
-    mr: {
-      monitoring: [
-        "पानांवर पाण्यासारखे डाग, काळे घाव आणि रोगाचा प्रसार यासाठी नियमित पाहणी करा.",
-        "पाऊस, उष्ण किंवा दमट हवामानानंतर अधिक काळजीपूर्वक पाहणी करा."
+    "mr": {
+      "monitoring": [
+        "वाढणारे लक्ष्याकार गोल डाग साठी नियमित पाहणी करा, विशेषतः अनुकूल हवामानात."
       ],
-      cultural: [
-        "शक्य असल्यास जास्त बाधित वनस्पतींचे भाग काढून टाका.",
-        "शेताची स्वच्छता राखा आणि पिकांच्या अवशेषांचे योग्य व्यवस्थापन करा.",
-        "अनावश्यक सिंचन आणि पाने जास्त वेळ ओलसर राहणे टाळा."
+      "cultural": [
+        "बाधित भाग काढा, स्वच्छता राखा आणि पाने जास्त वेळ ओलसर राहणे कमी करा."
       ],
-      biological: [
-        "उपलब्ध असल्यास स्थानिक शिफारसीनुसार जैविक किंवा प्रतिबंधात्मक रोग व्यवस्थापन पर्यायांना प्राधान्य द्या."
+      "biological": [
+        "उपलब्ध असल्यास या टोमॅटोतील टार्गेट स्पॉट साठी स्थानिक शिफारसीनुसार जैविक नियंत्रण पर्यायांना प्राधान्य द्या."
       ],
-      chemical: [
-        "उपचार आवश्यक असल्यासच कापसासाठी स्थानिक मान्य आणि रोगासाठी योग्य उत्पादन वापरा."
+      "chemical": [
+        "या रोगासाठी सध्याची भारत-विशिष्ट सत्यापित मात्रा उपलब्ध नाही. फक्त सध्या मान्य उत्पादन आणि लेबल सूचनांनुसार वापरा."
       ],
-      safety: [
-        "लेबल, मान्य मात्रा, प्रतीक्षा कालावधी आणि आवश्यक सुरक्षा साधनांचे पालन करा."
+      "safety": [
+        "सध्याचे उत्पादन लेबल, मान्य मात्रा, काढणीपूर्व प्रतीक्षा कालावधी/पुन्हा प्रवेश कालावधी आणि आवश्यक सुरक्षा साधनांचे पालन करा."
       ]
     }
   },
+  "Tomato_Leaf_Curl_Virus": {
+    "en": {
+      "monitoring": [
+        "Scout regularly for curling, yellowing and stunted young leaves."
+      ],
+      "cultural": [
+        "Remove severely affected material where practical; improve sanitation and avoid conditions that prolong leaf wetness when relevant."
+      ],
+      "biological": [
+        "Use locally recommended biological options for this viral disease where available."
+      ],
+      "chemical": [
+        "No curative pesticide for the virus. Manage the whitefly vector only when present using a currently approved product and label directions."
+      ],
+      "safety": [
+        "Follow the current product label, approved dose, PHI/re-entry requirements and required PPE."
+      ]
+    },
+    "hi": {
+      "monitoring": [
+        "पत्तियों का मुड़ना, पीलापन और नई वृद्धि का रुकना की नियमित जांच करें, खासकर अनुकूल मौसम में."
+      ],
+      "cultural": [
+        "संक्रमित हिस्से हटाएं, स्वच्छता बनाए रखें और पत्तियों का लंबे समय तक गीला रहना कम करें।"
+      ],
+      "biological": [
+        "जहां उपलब्ध हो, स्थानीय रूप से अनुशंसित जैविक व वाहक-प्रबंधन उपाय अपनाएं।"
+      ],
+      "chemical": [
+        "इस वायरस का कोई उपचारात्मक रासायनिक उपचार नहीं है। केवल लक्षित कीट/वाहक मौजूद होने पर उसके लिए वर्तमान में स्वीकृत नियंत्रण विकल्प और लेबल निर्देश देखें।"
+      ],
+      "safety": [
+        "वर्तमान उत्पाद लेबल, स्वीकृत मात्रा, कटाई-पूर्व प्रतीक्षा अवधि/पुनःप्रवेश अवधि और आवश्यक सुरक्षा उपकरणों का पालन करें।"
+      ]
+    },
+    "mr": {
+      "monitoring": [
+        "पाने कुरळे होणे, पिवळेपणा आणि नवीन वाढ खुंटणे साठी नियमित पाहणी करा, विशेषतः अनुकूल हवामानात."
+      ],
+      "cultural": [
+        "बाधित भाग काढा, स्वच्छता राखा आणि पाने जास्त वेळ ओलसर राहणे कमी करा."
+      ],
+      "biological": [
+        "उपलब्ध असल्यास स्थानिक शिफारसीनुसार जैविक व वाहक-व्यवस्थापन उपायांना प्राधान्य द्या."
+      ],
+      "chemical": [
+        "या विषाणूवर उपचार करणारा प्रभावी रासायनिक उपचार नाही. लक्ष्यित कीड/वाहक उपस्थित असल्यासच त्यासाठी सध्याचे मान्य नियंत्रण पर्याय आणि लेबल सूचना वापरा."
+      ],
+      "safety": [
+        "सध्याचे उत्पादन लेबल, मान्य मात्रा, काढणीपूर्व प्रतीक्षा कालावधी/पुन्हा प्रवेश कालावधी आणि आवश्यक सुरक्षा साधनांचे पालन करा."
+      ]
+    }
+  },
+  "Tomato_Mosaic_Virus": {
+    "en": {
+      "monitoring": [
+        "Scout regularly for mosaic pattern and distorted growth."
+      ],
+      "cultural": [
+        "Remove severely affected material where practical; improve sanitation and avoid conditions that prolong leaf wetness when relevant."
+      ],
+      "biological": [
+        "Use locally recommended biological options for this viral disease where available."
+      ],
+      "chemical": [
+        "No curative chemical treatment for established virus infection. Do not spray pesticide unless a target vector/pest is actually present."
+      ],
+      "safety": [
+        "Follow the current product label, approved dose, PHI/re-entry requirements and required PPE."
+      ]
+    },
+    "hi": {
+      "monitoring": [
+        "मोज़ेक पैटर्न और विकृत वृद्धि की नियमित जांच करें, खासकर अनुकूल मौसम में."
+      ],
+      "cultural": [
+        "संक्रमित हिस्से हटाएं, स्वच्छता बनाए रखें और पत्तियों का लंबे समय तक गीला रहना कम करें।"
+      ],
+      "biological": [
+        "जहां उपलब्ध हो, स्थानीय रूप से अनुशंसित जैविक व वाहक-प्रबंधन उपाय अपनाएं।"
+      ],
+      "chemical": [
+        "इस वायरस का कोई उपचारात्मक रासायनिक उपचार नहीं है। केवल लक्षित कीट/वाहक मौजूद होने पर उसके लिए वर्तमान में स्वीकृत नियंत्रण विकल्प और लेबल निर्देश देखें।"
+      ],
+      "safety": [
+        "वर्तमान उत्पाद लेबल, स्वीकृत मात्रा, कटाई-पूर्व प्रतीक्षा अवधि/पुनःप्रवेश अवधि और आवश्यक सुरक्षा उपकरणों का पालन करें।"
+      ]
+    },
+    "mr": {
+      "monitoring": [
+        "मोज़ेक नमुना आणि विकृत वाढ साठी नियमित पाहणी करा, विशेषतः अनुकूल हवामानात."
+      ],
+      "cultural": [
+        "बाधित भाग काढा, स्वच्छता राखा आणि पाने जास्त वेळ ओलसर राहणे कमी करा."
+      ],
+      "biological": [
+        "उपलब्ध असल्यास स्थानिक शिफारसीनुसार जैविक व वाहक-व्यवस्थापन उपायांना प्राधान्य द्या."
+      ],
+      "chemical": [
+        "या विषाणूवर उपचार करणारा प्रभावी रासायनिक उपचार नाही. लक्ष्यित कीड/वाहक उपस्थित असल्यासच त्यासाठी सध्याचे मान्य नियंत्रण पर्याय आणि लेबल सूचना वापरा."
+      ],
+      "safety": [
+        "सध्याचे उत्पादन लेबल, मान्य मात्रा, काढणीपूर्व प्रतीक्षा कालावधी/पुन्हा प्रवेश कालावधी आणि आवश्यक सुरक्षा साधनांचे पालन करा."
+      ]
+    }
+  },
+  "Tomato_Healthy": {
+    "en": {
+      "monitoring": [
+        "Inspect regularly for unusual spots, pests or growth changes and unexpected changes."
+      ],
+      "cultural": [
+        "Maintain sanitation, balanced irrigation/nutrition, healthy planting material and good airflow where appropriate."
+      ],
+      "biological": [
+        "No disease-specific biological control is needed while the crop is healthy."
+      ],
+      "chemical": [
+        "No pesticide recommendation. Apply crop-protection products only when a pest or disease is identified and treatment is justified."
+      ],
+      "safety": [
+        "Do not spray crop-protection products unless a pest or disease is identified and treatment is justified."
+      ]
+    },
+    "hi": {
+      "monitoring": [
+        "असामान्य धब्बे, कीट या वृद्धि में बदलाव की नियमित जांच करें और असामान्य बदलाव दिखने पर ध्यान दें।"
+      ],
+      "cultural": [
+        "स्वच्छता बनाए रखें, संतुलित सिंचाई व पोषण दें और स्वस्थ रोपण सामग्री का उपयोग करें।"
+      ],
+      "biological": [
+        "फसल स्वस्थ होने पर किसी रोग-विशिष्ट जैविक उपचार की आवश्यकता नहीं है।"
+      ],
+      "chemical": [
+        "कोई रासायनिक उपचार अनुशंसित नहीं है। कीट या रोग की पहचान होने पर ही उपचार करें।"
+      ],
+      "safety": [
+        "जब तक कीट या रोग की पुष्टि न हो, अनावश्यक फसल-सुरक्षा उत्पादों का छिड़काव न करें।"
+      ]
+    },
+    "mr": {
+      "monitoring": [
+        "असामान्य डाग, कीड किंवा वाढीतील बदल साठी नियमित पाहणी करा आणि असामान्य बदल दिसल्यास लक्ष द्या."
+      ],
+      "cultural": [
+        "शेत/बागेची स्वच्छता राखा, संतुलित सिंचन व पोषण द्या आणि निरोगी लागवड साहित्य वापरा."
+      ],
+      "biological": [
+        "पीक निरोगी असल्यास रोग-विशिष्ट जैविक उपचाराची गरज नाही."
+      ],
+      "chemical": [
+        "रासायनिक उपचाराची शिफारस नाही. कीड किंवा रोग ओळखल्यानंतरच उपचार करा."
+      ],
+      "safety": [
+        "कीड किंवा रोगाची खात्री नसताना अनावश्यक पीक संरक्षण उत्पादनांची फवारणी करू नका."
+      ]
+    }
+  },
+  "Potato_Early_Blight": {
+    "en": {
+      "monitoring": [
+        "Scout regularly for brown spots with concentric rings on older leaves."
+      ],
+      "cultural": [
+        "Remove severely affected material where practical; improve sanitation and avoid conditions that prolong leaf wetness when relevant."
+      ],
+      "biological": [
+        "Use locally recommended biological options for this fungal disease where available."
+      ],
+      "chemical": [
+        "Verified: mancozeb 75 WP 1.5–2.0 kg/ha is listed by TNAU for potato blight management. Verify the current product label."
+      ],
+      "safety": [
+        "Follow the current product label, approved dose, PHI/re-entry requirements and required PPE."
+      ]
+    },
+    "hi": {
+      "monitoring": [
+        "पुरानी पत्तियों पर छल्लेदार भूरे धब्बे की नियमित जांच करें, खासकर अनुकूल मौसम में."
+      ],
+      "cultural": [
+        "संक्रमित हिस्से हटाएं, स्वच्छता बनाए रखें और पत्तियों का लंबे समय तक गीला रहना कम करें।"
+      ],
+      "biological": [
+        "जहां उपलब्ध हो, इस आलू में अगेती झुलसा के लिए स्थानीय रूप से अनुशंसित जैविक नियंत्रण विकल्पों को प्राथमिकता दें।"
+      ],
+      "chemical": [
+        "सत्यापित TNAU मार्गदर्शन: mancozeb 75 WP — 1.5–2.0 किग्रा/हेक्टेयर। वर्तमान उत्पाद लेबल सत्यापित करें।"
+      ],
+      "safety": [
+        "वर्तमान उत्पाद लेबल, स्वीकृत मात्रा, कटाई-पूर्व प्रतीक्षा अवधि/पुनःप्रवेश अवधि और आवश्यक सुरक्षा उपकरणों का पालन करें।"
+      ]
+    },
+    "mr": {
+      "monitoring": [
+        "जुन्या पानांवर वलय असलेले तपकिरी डाग साठी नियमित पाहणी करा, विशेषतः अनुकूल हवामानात."
+      ],
+      "cultural": [
+        "बाधित भाग काढा, स्वच्छता राखा आणि पाने जास्त वेळ ओलसर राहणे कमी करा."
+      ],
+      "biological": [
+        "उपलब्ध असल्यास या बटाट्यातील अर्ली ब्लाइट साठी स्थानिक शिफारसीनुसार जैविक नियंत्रण पर्यायांना प्राधान्य द्या."
+      ],
+      "chemical": [
+        "सत्यापित TNAU मार्गदर्शन: mancozeb 75 WP — 1.5–2.0 किलो/हेक्टर. सध्याचे उत्पादन लेबल तपासा."
+      ],
+      "safety": [
+        "सध्याचे उत्पादन लेबल, मान्य मात्रा, काढणीपूर्व प्रतीक्षा कालावधी/पुन्हा प्रवेश कालावधी आणि आवश्यक सुरक्षा साधनांचे पालन करा."
+      ]
+    }
+  },
+  "Potato_Late_Blight": {
+    "en": {
+      "monitoring": [
+        "Scout regularly for dark water-soaked lesions and rapid spread."
+      ],
+      "cultural": [
+        "Remove severely affected material where practical; improve sanitation and avoid conditions that prolong leaf wetness when relevant."
+      ],
+      "biological": [
+        "Use locally recommended biological options for this fungal disease where available."
+      ],
+      "chemical": [
+        "Verified: TNAU lists mancozeb 75 WP 1.5–2.0 kg/ha and other blight-management options. Use current label directions."
+      ],
+      "safety": [
+        "Follow the current product label, approved dose, PHI/re-entry requirements and required PPE."
+      ]
+    },
+    "hi": {
+      "monitoring": [
+        "गहरे पानी जैसे धब्बे और तेजी से फैलाव की नियमित जांच करें, खासकर अनुकूल मौसम में."
+      ],
+      "cultural": [
+        "संक्रमित हिस्से हटाएं, स्वच्छता बनाए रखें और पत्तियों का लंबे समय तक गीला रहना कम करें।"
+      ],
+      "biological": [
+        "जहां उपलब्ध हो, इस आलू में पछेती झुलसा के लिए स्थानीय रूप से अनुशंसित जैविक नियंत्रण विकल्पों को प्राथमिकता दें।"
+      ],
+      "chemical": [
+        "सत्यापित TNAU विकल्प: mancozeb 75 WP — 1.5–2.0 किग्रा/हेक्टेयर। केवल वर्तमान लेबल के अनुसार उपयोग करें।"
+      ],
+      "safety": [
+        "वर्तमान उत्पाद लेबल, स्वीकृत मात्रा, कटाई-पूर्व प्रतीक्षा अवधि/पुनःप्रवेश अवधि और आवश्यक सुरक्षा उपकरणों का पालन करें।"
+      ]
+    },
+    "mr": {
+      "monitoring": [
+        "गडद पाण्यासारखे डाग आणि जलद फैलाव साठी नियमित पाहणी करा, विशेषतः अनुकूल हवामानात."
+      ],
+      "cultural": [
+        "बाधित भाग काढा, स्वच्छता राखा आणि पाने जास्त वेळ ओलसर राहणे कमी करा."
+      ],
+      "biological": [
+        "उपलब्ध असल्यास या बटाट्यातील उशिरा करपा साठी स्थानिक शिफारसीनुसार जैविक नियंत्रण पर्यायांना प्राधान्य द्या."
+      ],
+      "chemical": [
+        "सत्यापित TNAU पर्याय: mancozeb 75 WP — 1.5–2.0 किलो/हेक्टर. फक्त सध्याच्या लेबलनुसार वापरा."
+      ],
+      "safety": [
+        "सध्याचे उत्पादन लेबल, मान्य मात्रा, काढणीपूर्व प्रतीक्षा कालावधी/पुन्हा प्रवेश कालावधी आणि आवश्यक सुरक्षा साधनांचे पालन करा."
+      ]
+    }
+  },
+  "Potato_Healthy": {
+    "en": {
+      "monitoring": [
+        "Inspect regularly for leaf spots, discoloration, wilting or unusual growth and unexpected changes."
+      ],
+      "cultural": [
+        "Maintain sanitation, balanced irrigation/nutrition, healthy planting material and good airflow where appropriate."
+      ],
+      "biological": [
+        "No disease-specific biological control is needed while the crop is healthy."
+      ],
+      "chemical": [
+        "No pesticide recommendation unless a pest or disease is identified."
+      ],
+      "safety": [
+        "Do not spray crop-protection products unless a pest or disease is identified and treatment is justified."
+      ]
+    },
+    "hi": {
+      "monitoring": [
+        "पत्तियों पर धब्बे, रंग बदलना, मुरझाना या असामान्य वृद्धि की नियमित जांच करें और असामान्य बदलाव दिखने पर ध्यान दें।"
+      ],
+      "cultural": [
+        "स्वच्छता बनाए रखें, संतुलित सिंचाई व पोषण दें और स्वस्थ रोपण सामग्री का उपयोग करें।"
+      ],
+      "biological": [
+        "फसल स्वस्थ होने पर किसी रोग-विशिष्ट जैविक उपचार की आवश्यकता नहीं है।"
+      ],
+      "chemical": [
+        "कोई रासायनिक उपचार अनुशंसित नहीं है। कीट या रोग की पहचान होने पर ही उपचार करें।"
+      ],
+      "safety": [
+        "जब तक कीट या रोग की पुष्टि न हो, अनावश्यक फसल-सुरक्षा उत्पादों का छिड़काव न करें।"
+      ]
+    },
+    "mr": {
+      "monitoring": [
+        "पानांवरील डाग, रंग बदलणे, कोमेजणे किंवा असामान्य वाढ साठी नियमित पाहणी करा आणि असामान्य बदल दिसल्यास लक्ष द्या."
+      ],
+      "cultural": [
+        "शेत/बागेची स्वच्छता राखा, संतुलित सिंचन व पोषण द्या आणि निरोगी लागवड साहित्य वापरा."
+      ],
+      "biological": [
+        "पीक निरोगी असल्यास रोग-विशिष्ट जैविक उपचाराची गरज नाही."
+      ],
+      "chemical": [
+        "रासायनिक उपचाराची शिफारस नाही. कीड किंवा रोग ओळखल्यानंतरच उपचार करा."
+      ],
+      "safety": [
+        "कीड किंवा रोगाची खात्री नसताना अनावश्यक पीक संरक्षण उत्पादनांची फवारणी करू नका."
+      ]
+    }
+  },
+  "Maize_Cercospora_Gray_Leaf_Spot": {
+    "en": {
+      "monitoring": [
+        "Scout regularly for gray/tan rectangular lesions."
+      ],
+      "cultural": [
+        "Remove severely affected material where practical; improve sanitation and avoid conditions that prolong leaf wetness when relevant."
+      ],
+      "biological": [
+        "Use locally recommended biological options for this fungal disease where available."
+      ],
+      "chemical": [
+        "No verified current Indian dose added here. Use only a locally approved maize fungicide according to the current label."
+      ],
+      "safety": [
+        "Follow the current product label, approved dose, PHI/re-entry requirements and required PPE."
+      ]
+    },
+    "hi": {
+      "monitoring": [
+        "धूसर/भूरे आयताकार धब्बे की नियमित जांच करें, खासकर अनुकूल मौसम में."
+      ],
+      "cultural": [
+        "संक्रमित हिस्से हटाएं, स्वच्छता बनाए रखें और पत्तियों का लंबे समय तक गीला रहना कम करें।"
+      ],
+      "biological": [
+        "जहां उपलब्ध हो, इस मक्का में सर्कोस्पोरा/ग्रे लीफ स्पॉट के लिए स्थानीय रूप से अनुशंसित जैविक नियंत्रण विकल्पों को प्राथमिकता दें।"
+      ],
+      "chemical": [
+        "इस रोग के लिए वर्तमान भारत-विशिष्ट सत्यापित मात्रा उपलब्ध नहीं है। केवल वर्तमान में स्वीकृत उत्पाद और लेबल निर्देशों का उपयोग करें।"
+      ],
+      "safety": [
+        "वर्तमान उत्पाद लेबल, स्वीकृत मात्रा, कटाई-पूर्व प्रतीक्षा अवधि/पुनःप्रवेश अवधि और आवश्यक सुरक्षा उपकरणों का पालन करें।"
+      ]
+    },
+    "mr": {
+      "monitoring": [
+        "करडे/तपकिरी आयताकार डाग साठी नियमित पाहणी करा, विशेषतः अनुकूल हवामानात."
+      ],
+      "cultural": [
+        "बाधित भाग काढा, स्वच्छता राखा आणि पाने जास्त वेळ ओलसर राहणे कमी करा."
+      ],
+      "biological": [
+        "उपलब्ध असल्यास या मक्यातील सर्कोस्पोरा/ग्रे लीफ स्पॉट साठी स्थानिक शिफारसीनुसार जैविक नियंत्रण पर्यायांना प्राधान्य द्या."
+      ],
+      "chemical": [
+        "या रोगासाठी सध्याची भारत-विशिष्ट सत्यापित मात्रा उपलब्ध नाही. फक्त सध्या मान्य उत्पादन आणि लेबल सूचनांनुसार वापरा."
+      ],
+      "safety": [
+        "सध्याचे उत्पादन लेबल, मान्य मात्रा, काढणीपूर्व प्रतीक्षा कालावधी/पुन्हा प्रवेश कालावधी आणि आवश्यक सुरक्षा साधनांचे पालन करा."
+      ]
+    }
+  },
+  "Maize_Common_Rust": {
+    "en": {
+      "monitoring": [
+        "Scout regularly for reddish-brown rust pustules."
+      ],
+      "cultural": [
+        "Remove severely affected material where practical; improve sanitation and avoid conditions that prolong leaf wetness when relevant."
+      ],
+      "biological": [
+        "Use locally recommended biological options for this fungal disease where available."
+      ],
+      "chemical": [
+        "Verified: kresoxim-methyl 44.3% SC 1 ml/L or tebuconazole 1 ml/L (TNAU). Use current registered-label directions."
+      ],
+      "safety": [
+        "Follow the current product label, approved dose, PHI/re-entry requirements and required PPE."
+      ]
+    },
+    "hi": {
+      "monitoring": [
+        "लाल-भूरे रतुआ के उभार की नियमित जांच करें, खासकर अनुकूल मौसम में."
+      ],
+      "cultural": [
+        "संक्रमित हिस्से हटाएं, स्वच्छता बनाए रखें और पत्तियों का लंबे समय तक गीला रहना कम करें।"
+      ],
+      "biological": [
+        "जहां उपलब्ध हो, इस मक्का में कॉमन रस्ट के लिए स्थानीय रूप से अनुशंसित जैविक नियंत्रण विकल्पों को प्राथमिकता दें।"
+      ],
+      "chemical": [
+        "सत्यापित TNAU विकल्प: kresoxim-methyl 44.3% SC — 1 मिली/लीटर या tebuconazole — 1 मिली/लीटर। वर्तमान पंजीकृत लेबल के अनुसार उपयोग करें।"
+      ],
+      "safety": [
+        "वर्तमान उत्पाद लेबल, स्वीकृत मात्रा, कटाई-पूर्व प्रतीक्षा अवधि/पुनःप्रवेश अवधि और आवश्यक सुरक्षा उपकरणों का पालन करें।"
+      ]
+    },
+    "mr": {
+      "monitoring": [
+        "लाल-तपकिरी तांबेरा उभार साठी नियमित पाहणी करा, विशेषतः अनुकूल हवामानात."
+      ],
+      "cultural": [
+        "बाधित भाग काढा, स्वच्छता राखा आणि पाने जास्त वेळ ओलसर राहणे कमी करा."
+      ],
+      "biological": [
+        "उपलब्ध असल्यास या मक्यातील कॉमन रस्ट साठी स्थानिक शिफारसीनुसार जैविक नियंत्रण पर्यायांना प्राधान्य द्या."
+      ],
+      "chemical": [
+        "सत्यापित TNAU पर्याय: kresoxim-methyl 44.3% SC — 1 मिली/लिटर किंवा tebuconazole — 1 मिली/लिटर. सध्याच्या नोंदणीकृत लेबलनुसार वापरा."
+      ],
+      "safety": [
+        "सध्याचे उत्पादन लेबल, मान्य मात्रा, काढणीपूर्व प्रतीक्षा कालावधी/पुन्हा प्रवेश कालावधी आणि आवश्यक सुरक्षा साधनांचे पालन करा."
+      ]
+    }
+  },
+  "Maize_Northern_Leaf_Blight": {
+    "en": {
+      "monitoring": [
+        "Scout regularly for long cigar-shaped gray-green/brown lesions."
+      ],
+      "cultural": [
+        "Remove severely affected material where practical; improve sanitation and avoid conditions that prolong leaf wetness when relevant."
+      ],
+      "biological": [
+        "Use locally recommended biological options for this fungal disease where available."
+      ],
+      "chemical": [
+        "Verified: propiconazole 25% EC 1 ml/L or mancozeb/zineb 2–4 g/L are listed by TNAU. Check current label/registration."
+      ],
+      "safety": [
+        "Follow the current product label, approved dose, PHI/re-entry requirements and required PPE."
+      ]
+    },
+    "hi": {
+      "monitoring": [
+        "लंबे सिगार जैसे धब्बे की नियमित जांच करें, खासकर अनुकूल मौसम में."
+      ],
+      "cultural": [
+        "संक्रमित हिस्से हटाएं, स्वच्छता बनाए रखें और पत्तियों का लंबे समय तक गीला रहना कम करें।"
+      ],
+      "biological": [
+        "जहां उपलब्ध हो, इस मक्का में नॉर्दर्न लीफ ब्लाइट के लिए स्थानीय रूप से अनुशंसित जैविक नियंत्रण विकल्पों को प्राथमिकता दें।"
+      ],
+      "chemical": [
+        "सत्यापित TNAU विकल्प: propiconazole 25% EC — 1 मिली/लीटर या mancozeb/zineb — 2–4 ग्राम/लीटर। वर्तमान लेबल/पंजीकरण जांचें।"
+      ],
+      "safety": [
+        "वर्तमान उत्पाद लेबल, स्वीकृत मात्रा, कटाई-पूर्व प्रतीक्षा अवधि/पुनःप्रवेश अवधि और आवश्यक सुरक्षा उपकरणों का पालन करें।"
+      ]
+    },
+    "mr": {
+      "monitoring": [
+        "लांब सिगारसारखे डाग साठी नियमित पाहणी करा, विशेषतः अनुकूल हवामानात."
+      ],
+      "cultural": [
+        "बाधित भाग काढा, स्वच्छता राखा आणि पाने जास्त वेळ ओलसर राहणे कमी करा."
+      ],
+      "biological": [
+        "उपलब्ध असल्यास या मक्यातील नॉर्दर्न लीफ ब्लाइट साठी स्थानिक शिफारसीनुसार जैविक नियंत्रण पर्यायांना प्राधान्य द्या."
+      ],
+      "chemical": [
+        "सत्यापित TNAU पर्याय: propiconazole 25% EC — 1 मिली/लिटर किंवा mancozeb/zineb — 2–4 ग्रॅम/लिटर. सध्याचे लेबल/नोंदणी तपासा."
+      ],
+      "safety": [
+        "सध्याचे उत्पादन लेबल, मान्य मात्रा, काढणीपूर्व प्रतीक्षा कालावधी/पुन्हा प्रवेश कालावधी आणि आवश्यक सुरक्षा साधनांचे पालन करा."
+      ]
+    }
+  },
+  "Maize_Healthy": {
+    "en": {
+      "monitoring": [
+        "Inspect regularly for spots, rust, pests or unusual growth and unexpected changes."
+      ],
+      "cultural": [
+        "Maintain sanitation, balanced irrigation/nutrition, healthy planting material and good airflow where appropriate."
+      ],
+      "biological": [
+        "No disease-specific biological control is needed while the crop is healthy."
+      ],
+      "chemical": [
+        "No pesticide recommendation unless a pest or disease is identified."
+      ],
+      "safety": [
+        "Do not spray crop-protection products unless a pest or disease is identified and treatment is justified."
+      ]
+    },
+    "hi": {
+      "monitoring": [
+        "धब्बे, रतुआ, कीट या असामान्य वृद्धि की नियमित जांच करें और असामान्य बदलाव दिखने पर ध्यान दें।"
+      ],
+      "cultural": [
+        "स्वच्छता बनाए रखें, संतुलित सिंचाई व पोषण दें और स्वस्थ रोपण सामग्री का उपयोग करें।"
+      ],
+      "biological": [
+        "फसल स्वस्थ होने पर किसी रोग-विशिष्ट जैविक उपचार की आवश्यकता नहीं है।"
+      ],
+      "chemical": [
+        "कोई रासायनिक उपचार अनुशंसित नहीं है। कीट या रोग की पहचान होने पर ही उपचार करें।"
+      ],
+      "safety": [
+        "जब तक कीट या रोग की पुष्टि न हो, अनावश्यक फसल-सुरक्षा उत्पादों का छिड़काव न करें।"
+      ]
+    },
+    "mr": {
+      "monitoring": [
+        "डाग, तांबेरा, कीड किंवा असामान्य वाढ साठी नियमित पाहणी करा आणि असामान्य बदल दिसल्यास लक्ष द्या."
+      ],
+      "cultural": [
+        "शेत/बागेची स्वच्छता राखा, संतुलित सिंचन व पोषण द्या आणि निरोगी लागवड साहित्य वापरा."
+      ],
+      "biological": [
+        "पीक निरोगी असल्यास रोग-विशिष्ट जैविक उपचाराची गरज नाही."
+      ],
+      "chemical": [
+        "रासायनिक उपचाराची शिफारस नाही. कीड किंवा रोग ओळखल्यानंतरच उपचार करा."
+      ],
+      "safety": [
+        "कीड किंवा रोगाची खात्री नसताना अनावश्यक पीक संरक्षण उत्पादनांची फवारणी करू नका."
+      ]
+    }
+  },
+  "Apple_Scab": {
+    "en": {
+      "monitoring": [
+        "Scout regularly for olive-brown velvety leaf/fruit lesions."
+      ],
+      "cultural": [
+        "Remove severely affected material where practical; improve sanitation and avoid conditions that prolong leaf wetness when relevant."
+      ],
+      "biological": [
+        "Use locally recommended biological options for this fungal disease where available."
+      ],
+      "chemical": [
+        "Verified: TNAU lists Captan 300 g/100 L or Mancozeb 400 g/100 L at silver-tip/green-tip stage; later stages have additional rates. Use current label and crop-stage guidance."
+      ],
+      "safety": [
+        "Follow the current product label, approved dose, PHI/re-entry requirements and required PPE."
+      ]
+    },
+    "hi": {
+      "monitoring": [
+        "जैतूनी-भूरे मखमली धब्बे की नियमित जांच करें, खासकर अनुकूल मौसम में."
+      ],
+      "cultural": [
+        "प्रभावित पत्तियां/फल/लकड़ी जहां संभव हो हटाएं, बाग की स्वच्छता रखें और उचित वायु संचार बनाए रखें।"
+      ],
+      "biological": [
+        "जहां उपलब्ध हो, इस सेब में स्कैब के लिए स्थानीय रूप से अनुशंसित जैविक नियंत्रण विकल्पों को प्राथमिकता दें।"
+      ],
+      "chemical": [
+        "सत्यापित TNAU चरण-आधारित विकल्प: silver-tip/green-tip चरण पर Captan — 300 ग्राम/100 लीटर या Mancozeb — 400 ग्राम/100 लीटर। वर्तमान लेबल और स्थानीय चरण-आधारित सलाह का पालन करें।"
+      ],
+      "safety": [
+        "वर्तमान उत्पाद लेबल, स्वीकृत मात्रा, कटाई-पूर्व प्रतीक्षा अवधि/पुनःप्रवेश अवधि और आवश्यक सुरक्षा उपकरणों का पालन करें।"
+      ]
+    },
+    "mr": {
+      "monitoring": [
+        "ऑलिव्ह-तपकिरी मखमली डाग साठी नियमित पाहणी करा, विशेषतः अनुकूल हवामानात."
+      ],
+      "cultural": [
+        "बाधित पाने/फळे/लाकूड शक्य असल्यास काढा, बागेची स्वच्छता राखा आणि योग्य वायुवीजन ठेवा."
+      ],
+      "biological": [
+        "उपलब्ध असल्यास या सफरचंदातील स्कॅब साठी स्थानिक शिफारसीनुसार जैविक नियंत्रण पर्यायांना प्राधान्य द्या."
+      ],
+      "chemical": [
+        "सत्यापित TNAU टप्पानुसार पर्याय: silver-tip/green-tip टप्प्यावर Captan — 300 ग्रॅम/100 लिटर किंवा Mancozeb — 400 ग्रॅम/100 लिटर. सध्याचे लेबल व स्थानिक टप्पानुसार सल्ला पाळा."
+      ],
+      "safety": [
+        "सध्याचे उत्पादन लेबल, मान्य मात्रा, काढणीपूर्व प्रतीक्षा कालावधी/पुन्हा प्रवेश कालावधी आणि आवश्यक सुरक्षा साधनांचे पालन करा."
+      ]
+    }
+  },
+  "Apple_Black_Rot": {
+    "en": {
+      "monitoring": [
+        "Scout regularly for purple/brown leaf spots and fruit rot."
+      ],
+      "cultural": [
+        "Remove severely affected material where practical; improve sanitation and avoid conditions that prolong leaf wetness when relevant."
+      ],
+      "biological": [
+        "Use locally recommended biological options for this fungal disease where available."
+      ],
+      "chemical": [
+        "Published TNAU guidance: Ziram 80 WP 0.02%, Ziram 27 WP 0.6%, or Captan 50 WP 0.2%. Verify current registration/label before use."
+      ],
+      "safety": [
+        "Follow the current product label, approved dose, PHI/re-entry requirements and required PPE."
+      ]
+    },
+    "hi": {
+      "monitoring": [
+        "बैंगनी/भूरे धब्बे, कैंकर और फल सड़ना की नियमित जांच करें, खासकर अनुकूल मौसम में."
+      ],
+      "cultural": [
+        "प्रभावित पत्तियां/फल/लकड़ी जहां संभव हो हटाएं, बाग की स्वच्छता रखें और उचित वायु संचार बनाए रखें।"
+      ],
+      "biological": [
+        "जहां उपलब्ध हो, इस सेब में ब्लैक रॉट के लिए स्थानीय रूप से अनुशंसित जैविक नियंत्रण विकल्पों को प्राथमिकता दें।"
+      ],
+      "chemical": [
+        "प्रकाशित TNAU मार्गदर्शन: Ziram 80 WP — 0.02%, Ziram 27 WP — 0.6% या Captan 50 WP — 0.2%। उपयोग से पहले वर्तमान पंजीकरण/लेबल सत्यापित करें।"
+      ],
+      "safety": [
+        "वर्तमान उत्पाद लेबल, स्वीकृत मात्रा, कटाई-पूर्व प्रतीक्षा अवधि/पुनःप्रवेश अवधि और आवश्यक सुरक्षा उपकरणों का पालन करें।"
+      ]
+    },
+    "mr": {
+      "monitoring": [
+        "जांभळे/तपकिरी डाग, कॅंकर आणि फळांची सड साठी नियमित पाहणी करा, विशेषतः अनुकूल हवामानात."
+      ],
+      "cultural": [
+        "बाधित पाने/फळे/लाकूड शक्य असल्यास काढा, बागेची स्वच्छता राखा आणि योग्य वायुवीजन ठेवा."
+      ],
+      "biological": [
+        "उपलब्ध असल्यास या सफरचंदातील ब्लॅक रॉट साठी स्थानिक शिफारसीनुसार जैविक नियंत्रण पर्यायांना प्राधान्य द्या."
+      ],
+      "chemical": [
+        "प्रकाशित TNAU मार्गदर्शन: Ziram 80 WP — 0.02%, Ziram 27 WP — 0.6% किंवा Captan 50 WP — 0.2%. वापरण्यापूर्वी सध्याचे नोंदणी/लेबल तपासा."
+      ],
+      "safety": [
+        "सध्याचे उत्पादन लेबल, मान्य मात्रा, काढणीपूर्व प्रतीक्षा कालावधी/पुन्हा प्रवेश कालावधी आणि आवश्यक सुरक्षा साधनांचे पालन करा."
+      ]
+    }
+  },
+  "Apple_Cedar_Rust": {
+    "en": {
+      "monitoring": [
+        "Scout regularly for yellow-orange rust lesions on leaves/fruit."
+      ],
+      "cultural": [
+        "Remove severely affected material where practical; improve sanitation and avoid conditions that prolong leaf wetness when relevant."
+      ],
+      "biological": [
+        "Use locally recommended biological options for this fungal disease where available."
+      ],
+      "chemical": [
+        "No verified current Indian pesticide rate located for this specific apple disease; rely on current local horticulture advisory and label."
+      ],
+      "safety": [
+        "Follow the current product label, approved dose, PHI/re-entry requirements and required PPE."
+      ]
+    },
+    "hi": {
+      "monitoring": [
+        "पीले-नारंगी रतुआ जैसे धब्बे की नियमित जांच करें, खासकर अनुकूल मौसम में."
+      ],
+      "cultural": [
+        "प्रभावित पत्तियां/फल/लकड़ी जहां संभव हो हटाएं, बाग की स्वच्छता रखें और उचित वायु संचार बनाए रखें।"
+      ],
+      "biological": [
+        "जहां उपलब्ध हो, इस सेब में सीडर एप्पल रस्ट के लिए स्थानीय रूप से अनुशंसित जैविक नियंत्रण विकल्पों को प्राथमिकता दें।"
+      ],
+      "chemical": [
+        "इस रोग के लिए वर्तमान भारत-विशिष्ट सत्यापित मात्रा उपलब्ध नहीं है। केवल वर्तमान में स्वीकृत उत्पाद और लेबल निर्देशों का उपयोग करें।"
+      ],
+      "safety": [
+        "वर्तमान उत्पाद लेबल, स्वीकृत मात्रा, कटाई-पूर्व प्रतीक्षा अवधि/पुनःप्रवेश अवधि और आवश्यक सुरक्षा उपकरणों का पालन करें।"
+      ]
+    },
+    "mr": {
+      "monitoring": [
+        "पिवळे-नारिंगी तांबेरासारखे डाग साठी नियमित पाहणी करा, विशेषतः अनुकूल हवामानात."
+      ],
+      "cultural": [
+        "बाधित पाने/फळे/लाकूड शक्य असल्यास काढा, बागेची स्वच्छता राखा आणि योग्य वायुवीजन ठेवा."
+      ],
+      "biological": [
+        "उपलब्ध असल्यास या सफरचंदातील सीडर अॅपल रस्ट साठी स्थानिक शिफारसीनुसार जैविक नियंत्रण पर्यायांना प्राधान्य द्या."
+      ],
+      "chemical": [
+        "या रोगासाठी सध्याची भारत-विशिष्ट सत्यापित मात्रा उपलब्ध नाही. फक्त सध्या मान्य उत्पादन आणि लेबल सूचनांनुसार वापरा."
+      ],
+      "safety": [
+        "सध्याचे उत्पादन लेबल, मान्य मात्रा, काढणीपूर्व प्रतीक्षा कालावधी/पुन्हा प्रवेश कालावधी आणि आवश्यक सुरक्षा साधनांचे पालन करा."
+      ]
+    }
+  },
+  "Apple_Healthy": {
+    "en": {
+      "monitoring": [
+        "Inspect regularly for spots, rust, cankers or fruit lesions and unexpected changes."
+      ],
+      "cultural": [
+        "Maintain sanitation, balanced irrigation/nutrition, healthy planting material and good airflow where appropriate."
+      ],
+      "biological": [
+        "No disease-specific biological control is needed while the crop is healthy."
+      ],
+      "chemical": [
+        "No pesticide recommendation unless a pest or disease is identified."
+      ],
+      "safety": [
+        "Do not spray crop-protection products unless a pest or disease is identified and treatment is justified."
+      ]
+    },
+    "hi": {
+      "monitoring": [
+        "धब्बे, रतुआ, कैंकर या फल की असामान्यता की नियमित जांच करें और असामान्य बदलाव दिखने पर ध्यान दें।"
+      ],
+      "cultural": [
+        "स्वच्छता बनाए रखें, संतुलित सिंचाई व पोषण दें और स्वस्थ रोपण सामग्री का उपयोग करें।"
+      ],
+      "biological": [
+        "फसल स्वस्थ होने पर किसी रोग-विशिष्ट जैविक उपचार की आवश्यकता नहीं है।"
+      ],
+      "chemical": [
+        "कोई रासायनिक उपचार अनुशंसित नहीं है। कीट या रोग की पहचान होने पर ही उपचार करें।"
+      ],
+      "safety": [
+        "जब तक कीट या रोग की पुष्टि न हो, अनावश्यक फसल-सुरक्षा उत्पादों का छिड़काव न करें।"
+      ]
+    },
+    "mr": {
+      "monitoring": [
+        "डाग, तांबेरा, कॅंकर किंवा फळातील असामान्यता साठी नियमित पाहणी करा आणि असामान्य बदल दिसल्यास लक्ष द्या."
+      ],
+      "cultural": [
+        "शेत/बागेची स्वच्छता राखा, संतुलित सिंचन व पोषण द्या आणि निरोगी लागवड साहित्य वापरा."
+      ],
+      "biological": [
+        "पीक निरोगी असल्यास रोग-विशिष्ट जैविक उपचाराची गरज नाही."
+      ],
+      "chemical": [
+        "रासायनिक उपचाराची शिफारस नाही. कीड किंवा रोग ओळखल्यानंतरच उपचार करा."
+      ],
+      "safety": [
+        "कीड किंवा रोगाची खात्री नसताना अनावश्यक पीक संरक्षण उत्पादनांची फवारणी करू नका."
+      ]
+    }
+  },
+  "Cherry_Powdery_Mildew": {
+    "en": {
+      "monitoring": [
+        "Scout regularly for white powdery growth."
+      ],
+      "cultural": [
+        "Remove severely affected material where practical; improve sanitation and avoid conditions that prolong leaf wetness when relevant."
+      ],
+      "biological": [
+        "Use locally recommended biological options for this fungal disease where available."
+      ],
+      "chemical": [
+        "No verified current Indian cherry-specific dose located; do not copy peach rates into cherry. Use a currently approved cherry product if locally recommended."
+      ],
+      "safety": [
+        "Follow the current product label, approved dose, PHI/re-entry requirements and required PPE."
+      ]
+    },
+    "hi": {
+      "monitoring": [
+        "पत्तियों/नई टहनियों पर सफेद चूर्ण जैसी वृद्धि की नियमित जांच करें, खासकर अनुकूल मौसम में."
+      ],
+      "cultural": [
+        "प्रभावित पत्तियां/फल/लकड़ी जहां संभव हो हटाएं, बाग की स्वच्छता रखें और उचित वायु संचार बनाए रखें।"
+      ],
+      "biological": [
+        "जहां उपलब्ध हो, इस चेरी में पाउडरी मिल्ड्यू के लिए स्थानीय रूप से अनुशंसित जैविक नियंत्रण विकल्पों को प्राथमिकता दें।"
+      ],
+      "chemical": [
+        "इस रोग के लिए वर्तमान भारत-विशिष्ट सत्यापित मात्रा उपलब्ध नहीं है। केवल वर्तमान में स्वीकृत उत्पाद और लेबल निर्देशों का उपयोग करें।"
+      ],
+      "safety": [
+        "वर्तमान उत्पाद लेबल, स्वीकृत मात्रा, कटाई-पूर्व प्रतीक्षा अवधि/पुनःप्रवेश अवधि और आवश्यक सुरक्षा उपकरणों का पालन करें।"
+      ]
+    },
+    "mr": {
+      "monitoring": [
+        "पानांवर/नवीन फांद्यांवर पांढरी पावडरी वाढ साठी नियमित पाहणी करा, विशेषतः अनुकूल हवामानात."
+      ],
+      "cultural": [
+        "बाधित पाने/फळे/लाकूड शक्य असल्यास काढा, बागेची स्वच्छता राखा आणि योग्य वायुवीजन ठेवा."
+      ],
+      "biological": [
+        "उपलब्ध असल्यास या चेरीतील भुरी रोग साठी स्थानिक शिफारसीनुसार जैविक नियंत्रण पर्यायांना प्राधान्य द्या."
+      ],
+      "chemical": [
+        "या रोगासाठी सध्याची भारत-विशिष्ट सत्यापित मात्रा उपलब्ध नाही. फक्त सध्या मान्य उत्पादन आणि लेबल सूचनांनुसार वापरा."
+      ],
+      "safety": [
+        "सध्याचे उत्पादन लेबल, मान्य मात्रा, काढणीपूर्व प्रतीक्षा कालावधी/पुन्हा प्रवेश कालावधी आणि आवश्यक सुरक्षा साधनांचे पालन करा."
+      ]
+    }
+  },
+  "Cherry_Healthy": {
+    "en": {
+      "monitoring": [
+        "Inspect regularly for leaf discoloration, mildew or fruit abnormalities and unexpected changes."
+      ],
+      "cultural": [
+        "Maintain sanitation, balanced irrigation/nutrition, healthy planting material and good airflow where appropriate."
+      ],
+      "biological": [
+        "No disease-specific biological control is needed while the crop is healthy."
+      ],
+      "chemical": [
+        "No pesticide recommendation unless a pest or disease is identified."
+      ],
+      "safety": [
+        "Do not spray crop-protection products unless a pest or disease is identified and treatment is justified."
+      ]
+    },
+    "hi": {
+      "monitoring": [
+        "बुरशी, धब्बे, कीट या फल की असामान्यता की नियमित जांच करें और असामान्य बदलाव दिखने पर ध्यान दें।"
+      ],
+      "cultural": [
+        "स्वच्छता बनाए रखें, संतुलित सिंचाई व पोषण दें और स्वस्थ रोपण सामग्री का उपयोग करें।"
+      ],
+      "biological": [
+        "फसल स्वस्थ होने पर किसी रोग-विशिष्ट जैविक उपचार की आवश्यकता नहीं है।"
+      ],
+      "chemical": [
+        "कोई रासायनिक उपचार अनुशंसित नहीं है। कीट या रोग की पहचान होने पर ही उपचार करें।"
+      ],
+      "safety": [
+        "जब तक कीट या रोग की पुष्टि न हो, अनावश्यक फसल-सुरक्षा उत्पादों का छिड़काव न करें।"
+      ]
+    },
+    "mr": {
+      "monitoring": [
+        "बुरशी, डाग, कीड किंवा फळातील असामान्यता साठी नियमित पाहणी करा आणि असामान्य बदल दिसल्यास लक्ष द्या."
+      ],
+      "cultural": [
+        "शेत/बागेची स्वच्छता राखा, संतुलित सिंचन व पोषण द्या आणि निरोगी लागवड साहित्य वापरा."
+      ],
+      "biological": [
+        "पीक निरोगी असल्यास रोग-विशिष्ट जैविक उपचाराची गरज नाही."
+      ],
+      "chemical": [
+        "रासायनिक उपचाराची शिफारस नाही. कीड किंवा रोग ओळखल्यानंतरच उपचार करा."
+      ],
+      "safety": [
+        "कीड किंवा रोगाची खात्री नसताना अनावश्यक पीक संरक्षण उत्पादनांची फवारणी करू नका."
+      ]
+    }
+  },
+  "Grape_Black_Rot": {
+    "en": {
+      "monitoring": [
+        "Scout regularly for dark/sunken berry lesions and leaf spots."
+      ],
+      "cultural": [
+        "Remove severely affected material where practical; improve sanitation and avoid conditions that prolong leaf wetness when relevant."
+      ],
+      "biological": [
+        "Use locally recommended biological options for this fungal disease where available."
+      ],
+      "chemical": [
+        "No verified current Indian dose located specifically for grape black rot in the reviewed source set; use a locally approved grape fungicide only if recommended."
+      ],
+      "safety": [
+        "Follow the current product label, approved dose, PHI/re-entry requirements and required PPE."
+      ]
+    },
+    "hi": {
+      "monitoring": [
+        "गहरे धब्बे और फलों पर सड़न की नियमित जांच करें, खासकर अनुकूल मौसम में."
+      ],
+      "cultural": [
+        "प्रभावित पत्तियां/फल/लकड़ी जहां संभव हो हटाएं, बाग की स्वच्छता रखें और उचित वायु संचार बनाए रखें।"
+      ],
+      "biological": [
+        "जहां उपलब्ध हो, इस अंगूर में ब्लैक रॉट के लिए स्थानीय रूप से अनुशंसित जैविक नियंत्रण विकल्पों को प्राथमिकता दें।"
+      ],
+      "chemical": [
+        "इस रोग के लिए वर्तमान भारत-विशिष्ट सत्यापित मात्रा उपलब्ध नहीं है। केवल वर्तमान में स्वीकृत उत्पाद और लेबल निर्देशों का उपयोग करें।"
+      ],
+      "safety": [
+        "वर्तमान उत्पाद लेबल, स्वीकृत मात्रा, कटाई-पूर्व प्रतीक्षा अवधि/पुनःप्रवेश अवधि और आवश्यक सुरक्षा उपकरणों का पालन करें।"
+      ]
+    },
+    "mr": {
+      "monitoring": [
+        "गडद डाग आणि फळांवर सड साठी नियमित पाहणी करा, विशेषतः अनुकूल हवामानात."
+      ],
+      "cultural": [
+        "बाधित पाने/फळे/लाकूड शक्य असल्यास काढा, बागेची स्वच्छता राखा आणि योग्य वायुवीजन ठेवा."
+      ],
+      "biological": [
+        "उपलब्ध असल्यास या द्राक्षातील ब्लॅक रॉट साठी स्थानिक शिफारसीनुसार जैविक नियंत्रण पर्यायांना प्राधान्य द्या."
+      ],
+      "chemical": [
+        "या रोगासाठी सध्याची भारत-विशिष्ट सत्यापित मात्रा उपलब्ध नाही. फक्त सध्या मान्य उत्पादन आणि लेबल सूचनांनुसार वापरा."
+      ],
+      "safety": [
+        "सध्याचे उत्पादन लेबल, मान्य मात्रा, काढणीपूर्व प्रतीक्षा कालावधी/पुन्हा प्रवेश कालावधी आणि आवश्यक सुरक्षा साधनांचे पालन करा."
+      ]
+    }
+  },
+  "Grape_Esca": {
+    "en": {
+      "monitoring": [
+        "Scout regularly for leaf striping, tiger-striping and wood symptoms."
+      ],
+      "cultural": [
+        "Remove severely affected material where practical; improve sanitation and avoid conditions that prolong leaf wetness when relevant."
+      ],
+      "biological": [
+        "Use locally recommended biological options for this fungal trunk disease where available."
+      ],
+      "chemical": [
+        "No verified current curative pesticide rate added; sanitation, removal of affected wood and local vineyard guidance are preferred."
+      ],
+      "safety": [
+        "Follow the current product label, approved dose, PHI/re-entry requirements and required PPE."
+      ]
+    },
+    "hi": {
+      "monitoring": [
+        "पत्तियों पर धारियां तथा तने/लकड़ी से जुड़े लक्षण की नियमित जांच करें, खासकर अनुकूल मौसम में."
+      ],
+      "cultural": [
+        "प्रभावित पत्तियां/फल/लकड़ी जहां संभव हो हटाएं, बाग की स्वच्छता रखें और उचित वायु संचार बनाए रखें।"
+      ],
+      "biological": [
+        "जहां उपलब्ध हो, इस अंगूर में एस्का के लिए स्थानीय रूप से अनुशंसित जैविक नियंत्रण विकल्पों को प्राथमिकता दें।"
+      ],
+      "chemical": [
+        "इस रोग के लिए वर्तमान भारत-विशिष्ट सत्यापित मात्रा उपलब्ध नहीं है। केवल वर्तमान में स्वीकृत उत्पाद और लेबल निर्देशों का उपयोग करें।"
+      ],
+      "safety": [
+        "वर्तमान उत्पाद लेबल, स्वीकृत मात्रा, कटाई-पूर्व प्रतीक्षा अवधि/पुनःप्रवेश अवधि और आवश्यक सुरक्षा उपकरणों का पालन करें।"
+      ]
+    },
+    "mr": {
+      "monitoring": [
+        "पानांवरील पट्टे आणि खोड/लाकडाशी संबंधित लक्षणे साठी नियमित पाहणी करा, विशेषतः अनुकूल हवामानात."
+      ],
+      "cultural": [
+        "बाधित पाने/फळे/लाकूड शक्य असल्यास काढा, बागेची स्वच्छता राखा आणि योग्य वायुवीजन ठेवा."
+      ],
+      "biological": [
+        "उपलब्ध असल्यास या द्राक्षातील एस्का साठी स्थानिक शिफारसीनुसार जैविक नियंत्रण पर्यायांना प्राधान्य द्या."
+      ],
+      "chemical": [
+        "या रोगासाठी सध्याची भारत-विशिष्ट सत्यापित मात्रा उपलब्ध नाही. फक्त सध्या मान्य उत्पादन आणि लेबल सूचनांनुसार वापरा."
+      ],
+      "safety": [
+        "सध्याचे उत्पादन लेबल, मान्य मात्रा, काढणीपूर्व प्रतीक्षा कालावधी/पुन्हा प्रवेश कालावधी आणि आवश्यक सुरक्षा साधनांचे पालन करा."
+      ]
+    }
+  },
+  "Grape_Isariopsis_Leaf_Spot": {
+    "en": {
+      "monitoring": [
+        "Scout regularly for dark leaf spots."
+      ],
+      "cultural": [
+        "Remove severely affected material where practical; improve sanitation and avoid conditions that prolong leaf wetness when relevant."
+      ],
+      "biological": [
+        "Use locally recommended biological options for this fungal disease where available."
+      ],
+      "chemical": [
+        "Published TNAU guidance for black leaf spot/Isariopsis: carbendazim 1 g/L, chlorothalonil 2 g/L, or propiconazole/difenoconazole 1 g/L, twice 15 days apart. Verify current label/registration."
+      ],
+      "safety": [
+        "Follow the current product label, approved dose, PHI/re-entry requirements and required PPE."
+      ]
+    },
+    "hi": {
+      "monitoring": [
+        "पत्तियों पर गहरे धब्बे की नियमित जांच करें, खासकर अनुकूल मौसम में."
+      ],
+      "cultural": [
+        "प्रभावित पत्तियां/फल/लकड़ी जहां संभव हो हटाएं, बाग की स्वच्छता रखें और उचित वायु संचार बनाए रखें।"
+      ],
+      "biological": [
+        "जहां उपलब्ध हो, इस अंगूर में इसारिओप्सिस पत्ती धब्बा के लिए स्थानीय रूप से अनुशंसित जैविक नियंत्रण विकल्पों को प्राथमिकता दें।"
+      ],
+      "chemical": [
+        "प्रकाशित TNAU मार्गदर्शन: Carbendazim — 1 ग्राम/लीटर, Chlorothalonil — 2 ग्राम/लीटर या Propiconazole/Difenoconazole — 1 ग्राम/लीटर; लक्षण आने के 15 दिन के अंतर पर दो बार। वर्तमान पंजीकरण/लेबल सत्यापित करें।"
+      ],
+      "safety": [
+        "वर्तमान उत्पाद लेबल, स्वीकृत मात्रा, कटाई-पूर्व प्रतीक्षा अवधि/पुनःप्रवेश अवधि और आवश्यक सुरक्षा उपकरणों का पालन करें।"
+      ]
+    },
+    "mr": {
+      "monitoring": [
+        "पानांवरील गडद डाग साठी नियमित पाहणी करा, विशेषतः अनुकूल हवामानात."
+      ],
+      "cultural": [
+        "बाधित पाने/फळे/लाकूड शक्य असल्यास काढा, बागेची स्वच्छता राखा आणि योग्य वायुवीजन ठेवा."
+      ],
+      "biological": [
+        "उपलब्ध असल्यास या द्राक्षातील इसारिओप्सिस पानावरील डाग साठी स्थानिक शिफारसीनुसार जैविक नियंत्रण पर्यायांना प्राधान्य द्या."
+      ],
+      "chemical": [
+        "प्रकाशित TNAU मार्गदर्शन: Carbendazim — 1 ग्रॅम/लिटर, Chlorothalonil — 2 ग्रॅम/लिटर किंवा Propiconazole/Difenoconazole — 1 ग्रॅम/लिटर; लक्षणे दिसल्यापासून 15 दिवसांच्या अंतराने दोनदा. सध्याचे नोंदणी/लेबल तपासा."
+      ],
+      "safety": [
+        "सध्याचे उत्पादन लेबल, मान्य मात्रा, काढणीपूर्व प्रतीक्षा कालावधी/पुन्हा प्रवेश कालावधी आणि आवश्यक सुरक्षा साधनांचे पालन करा."
+      ]
+    }
+  },
+  "Grape_Healthy": {
+    "en": {
+      "monitoring": [
+        "Inspect regularly for leaf spots, mildew, pests or fruit abnormalities and unexpected changes."
+      ],
+      "cultural": [
+        "Maintain sanitation, balanced irrigation/nutrition, healthy planting material and good airflow where appropriate."
+      ],
+      "biological": [
+        "No disease-specific biological control is needed while the crop is healthy."
+      ],
+      "chemical": [
+        "No pesticide recommendation unless a pest or disease is identified."
+      ],
+      "safety": [
+        "Do not spray crop-protection products unless a pest or disease is identified and treatment is justified."
+      ]
+    },
+    "hi": {
+      "monitoring": [
+        "पत्ती धब्बे, बुरशी, कीट या फल की असामान्यता की नियमित जांच करें और असामान्य बदलाव दिखने पर ध्यान दें।"
+      ],
+      "cultural": [
+        "स्वच्छता बनाए रखें, संतुलित सिंचाई व पोषण दें और स्वस्थ रोपण सामग्री का उपयोग करें।"
+      ],
+      "biological": [
+        "फसल स्वस्थ होने पर किसी रोग-विशिष्ट जैविक उपचार की आवश्यकता नहीं है।"
+      ],
+      "chemical": [
+        "कोई रासायनिक उपचार अनुशंसित नहीं है। कीट या रोग की पहचान होने पर ही उपचार करें।"
+      ],
+      "safety": [
+        "जब तक कीट या रोग की पुष्टि न हो, अनावश्यक फसल-सुरक्षा उत्पादों का छिड़काव न करें।"
+      ]
+    },
+    "mr": {
+      "monitoring": [
+        "पानांवरील डाग, बुरशी, कीड किंवा फळातील असामान्यता साठी नियमित पाहणी करा आणि असामान्य बदल दिसल्यास लक्ष द्या."
+      ],
+      "cultural": [
+        "शेत/बागेची स्वच्छता राखा, संतुलित सिंचन व पोषण द्या आणि निरोगी लागवड साहित्य वापरा."
+      ],
+      "biological": [
+        "पीक निरोगी असल्यास रोग-विशिष्ट जैविक उपचाराची गरज नाही."
+      ],
+      "chemical": [
+        "रासायनिक उपचाराची शिफारस नाही. कीड किंवा रोग ओळखल्यानंतरच उपचार करा."
+      ],
+      "safety": [
+        "कीड किंवा रोगाची खात्री नसताना अनावश्यक पीक संरक्षण उत्पादनांची फवारणी करू नका."
+      ]
+    }
+  },
+  "Peach_Bacterial_Spot": {
+    "en": {
+      "monitoring": [
+        "Scout regularly for small angular lesions and possible fruit spotting."
+      ],
+      "cultural": [
+        "Remove severely affected material where practical; improve sanitation and avoid conditions that prolong leaf wetness when relevant."
+      ],
+      "biological": [
+        "Use locally recommended biological options for this bacterial disease where available."
+      ],
+      "chemical": [
+        "No verified current Indian peach-specific dose for bacterial spot located in the reviewed sources. Copper-based dormant protection is mentioned for related Prunus bacterial/canker management, but do not show it as a disease-specific dose for this diagnosis."
+      ],
+      "safety": [
+        "Follow the current product label, approved dose, PHI/re-entry requirements and required PPE."
+      ]
+    },
+    "hi": {
+      "monitoring": [
+        "छोटे कोणीय धब्बे और फलों पर दाग की नियमित जांच करें, खासकर अनुकूल मौसम में."
+      ],
+      "cultural": [
+        "प्रभावित पत्तियां/फल/लकड़ी जहां संभव हो हटाएं, बाग की स्वच्छता रखें और उचित वायु संचार बनाए रखें।"
+      ],
+      "biological": [
+        "जहां उपलब्ध हो, इस जीवाणुजनित समस्या के लिए स्थानीय रूप से अनुशंसित जैविक/प्रतिरोधी प्रबंधन अपनाएं।"
+      ],
+      "chemical": [
+        "इस रोग के लिए वर्तमान भारत-विशिष्ट सत्यापित मात्रा उपलब्ध नहीं है। केवल वर्तमान स्वीकृत लेबल के अनुसार उपचार करें।"
+      ],
+      "safety": [
+        "वर्तमान उत्पाद लेबल, स्वीकृत मात्रा, कटाई-पूर्व प्रतीक्षा अवधि/पुनःप्रवेश अवधि और आवश्यक सुरक्षा उपकरणों का पालन करें।"
+      ]
+    },
+    "mr": {
+      "monitoring": [
+        "लहान कोनीय डाग आणि फळांवरील डाग साठी नियमित पाहणी करा, विशेषतः अनुकूल हवामानात."
+      ],
+      "cultural": [
+        "बाधित पाने/फळे/लाकूड शक्य असल्यास काढा, बागेची स्वच्छता राखा आणि योग्य वायुवीजन ठेवा."
+      ],
+      "biological": [
+        "उपलब्ध असल्यास या जिवाणूजन्य समस्येसाठी स्थानिक शिफारसीनुसार जैविक/प्रतिरोधक व्यवस्थापन वापरा."
+      ],
+      "chemical": [
+        "या रोगासाठी सध्याची भारत-विशिष्ट सत्यापित मात्रा उपलब्ध नाही. फक्त सध्याच्या मान्य लेबलनुसार उपचार करा."
+      ],
+      "safety": [
+        "सध्याचे उत्पादन लेबल, मान्य मात्रा, काढणीपूर्व प्रतीक्षा कालावधी/पुन्हा प्रवेश कालावधी आणि आवश्यक सुरक्षा साधनांचे पालन करा."
+      ]
+    }
+  },
+  "Peach_Healthy": {
+    "en": {
+      "monitoring": [
+        "Inspect regularly for leaf curl, spots or fruit abnormalities and unexpected changes."
+      ],
+      "cultural": [
+        "Maintain sanitation, balanced irrigation/nutrition, healthy planting material and good airflow where appropriate."
+      ],
+      "biological": [
+        "No disease-specific biological control is needed while the crop is healthy."
+      ],
+      "chemical": [
+        "No pesticide recommendation unless a pest or disease is identified."
+      ],
+      "safety": [
+        "Do not spray crop-protection products unless a pest or disease is identified and treatment is justified."
+      ]
+    },
+    "hi": {
+      "monitoring": [
+        "पत्ती धब्बे, कीट या फल की असामान्यता की नियमित जांच करें और असामान्य बदलाव दिखने पर ध्यान दें।"
+      ],
+      "cultural": [
+        "स्वच्छता बनाए रखें, संतुलित सिंचाई व पोषण दें और स्वस्थ रोपण सामग्री का उपयोग करें।"
+      ],
+      "biological": [
+        "फसल स्वस्थ होने पर किसी रोग-विशिष्ट जैविक उपचार की आवश्यकता नहीं है।"
+      ],
+      "chemical": [
+        "कोई रासायनिक उपचार अनुशंसित नहीं है। कीट या रोग की पहचान होने पर ही उपचार करें।"
+      ],
+      "safety": [
+        "जब तक कीट या रोग की पुष्टि न हो, अनावश्यक फसल-सुरक्षा उत्पादों का छिड़काव न करें।"
+      ]
+    },
+    "mr": {
+      "monitoring": [
+        "पानांवरील डाग, कीड किंवा फळातील असामान्यता साठी नियमित पाहणी करा आणि असामान्य बदल दिसल्यास लक्ष द्या."
+      ],
+      "cultural": [
+        "शेत/बागेची स्वच्छता राखा, संतुलित सिंचन व पोषण द्या आणि निरोगी लागवड साहित्य वापरा."
+      ],
+      "biological": [
+        "पीक निरोगी असल्यास रोग-विशिष्ट जैविक उपचाराची गरज नाही."
+      ],
+      "chemical": [
+        "रासायनिक उपचाराची शिफारस नाही. कीड किंवा रोग ओळखल्यानंतरच उपचार करा."
+      ],
+      "safety": [
+        "कीड किंवा रोगाची खात्री नसताना अनावश्यक पीक संरक्षण उत्पादनांची फवारणी करू नका."
+      ]
+    }
+  },
+  "Bell_Pepper_Bacterial_Spot": {
+    "en": {
+      "monitoring": [
+        "Scout regularly for small dark/water-soaked spots and yellowing."
+      ],
+      "cultural": [
+        "Remove severely affected material where practical; improve sanitation and avoid conditions that prolong leaf wetness when relevant."
+      ],
+      "biological": [
+        "Use locally recommended biological options for this bacterial disease where available."
+      ],
+      "chemical": [
+        "No verified current bell-pepper-specific dose added here. Use only a currently approved bacterial-disease product for capsicum/pepper according to its label."
+      ],
+      "safety": [
+        "Follow the current product label, approved dose, PHI/re-entry requirements and required PPE."
+      ]
+    },
+    "hi": {
+      "monitoring": [
+        "छोटे गहरे/पानी जैसे धब्बे और पीलापन की नियमित जांच करें, खासकर अनुकूल मौसम में."
+      ],
+      "cultural": [
+        "संक्रमित हिस्से हटाएं, स्वच्छता बनाए रखें और पत्तियों का लंबे समय तक गीला रहना कम करें।"
+      ],
+      "biological": [
+        "जहां उपलब्ध हो, इस जीवाणुजनित समस्या के लिए स्थानीय रूप से अनुशंसित जैविक/प्रतिरोधी प्रबंधन अपनाएं।"
+      ],
+      "chemical": [
+        "इस रोग के लिए वर्तमान भारत-विशिष्ट सत्यापित मात्रा उपलब्ध नहीं है। केवल वर्तमान स्वीकृत लेबल के अनुसार उपचार करें।"
+      ],
+      "safety": [
+        "वर्तमान उत्पाद लेबल, स्वीकृत मात्रा, कटाई-पूर्व प्रतीक्षा अवधि/पुनःप्रवेश अवधि और आवश्यक सुरक्षा उपकरणों का पालन करें।"
+      ]
+    },
+    "mr": {
+      "monitoring": [
+        "लहान गडद/पाण्यासारखे डाग आणि पिवळेपणा साठी नियमित पाहणी करा, विशेषतः अनुकूल हवामानात."
+      ],
+      "cultural": [
+        "बाधित भाग काढा, स्वच्छता राखा आणि पाने जास्त वेळ ओलसर राहणे कमी करा."
+      ],
+      "biological": [
+        "उपलब्ध असल्यास या जिवाणूजन्य समस्येसाठी स्थानिक शिफारसीनुसार जैविक/प्रतिरोधक व्यवस्थापन वापरा."
+      ],
+      "chemical": [
+        "या रोगासाठी सध्याची भारत-विशिष्ट सत्यापित मात्रा उपलब्ध नाही. फक्त सध्याच्या मान्य लेबलनुसार उपचार करा."
+      ],
+      "safety": [
+        "सध्याचे उत्पादन लेबल, मान्य मात्रा, काढणीपूर्व प्रतीक्षा कालावधी/पुन्हा प्रवेश कालावधी आणि आवश्यक सुरक्षा साधनांचे पालन करा."
+      ]
+    }
+  },
+  "Bell_Pepper_Healthy": {
+    "en": {
+      "monitoring": [
+        "Inspect regularly for spots, pests, wilting or unusual growth and unexpected changes."
+      ],
+      "cultural": [
+        "Maintain sanitation, balanced irrigation/nutrition, healthy planting material and good airflow where appropriate."
+      ],
+      "biological": [
+        "No disease-specific biological control is needed while the crop is healthy."
+      ],
+      "chemical": [
+        "No pesticide recommendation unless a pest or disease is identified."
+      ],
+      "safety": [
+        "Do not spray crop-protection products unless a pest or disease is identified and treatment is justified."
+      ]
+    },
+    "hi": {
+      "monitoring": [
+        "धब्बे, कीट, मुरझाना या असामान्य वृद्धि की नियमित जांच करें और असामान्य बदलाव दिखने पर ध्यान दें।"
+      ],
+      "cultural": [
+        "स्वच्छता बनाए रखें, संतुलित सिंचाई व पोषण दें और स्वस्थ रोपण सामग्री का उपयोग करें।"
+      ],
+      "biological": [
+        "फसल स्वस्थ होने पर किसी रोग-विशिष्ट जैविक उपचार की आवश्यकता नहीं है।"
+      ],
+      "chemical": [
+        "कोई रासायनिक उपचार अनुशंसित नहीं है। कीट या रोग की पहचान होने पर ही उपचार करें।"
+      ],
+      "safety": [
+        "जब तक कीट या रोग की पुष्टि न हो, अनावश्यक फसल-सुरक्षा उत्पादों का छिड़काव न करें।"
+      ]
+    },
+    "mr": {
+      "monitoring": [
+        "डाग, कीड, कोमेजणे किंवा असामान्य वाढ साठी नियमित पाहणी करा आणि असामान्य बदल दिसल्यास लक्ष द्या."
+      ],
+      "cultural": [
+        "शेत/बागेची स्वच्छता राखा, संतुलित सिंचन व पोषण द्या आणि निरोगी लागवड साहित्य वापरा."
+      ],
+      "biological": [
+        "पीक निरोगी असल्यास रोग-विशिष्ट जैविक उपचाराची गरज नाही."
+      ],
+      "chemical": [
+        "रासायनिक उपचाराची शिफारस नाही. कीड किंवा रोग ओळखल्यानंतरच उपचार करा."
+      ],
+      "safety": [
+        "कीड किंवा रोगाची खात्री नसताना अनावश्यक पीक संरक्षण उत्पादनांची फवारणी करू नका."
+      ]
+    }
+  },
+  "Strawberry_Leaf_Scorch": {
+    "en": {
+      "monitoring": [
+        "Scout regularly for reddish-purple spots and scorched leaf tissue."
+      ],
+      "cultural": [
+        "Remove severely affected material where practical; improve sanitation and avoid conditions that prolong leaf wetness when relevant."
+      ],
+      "biological": [
+        "Use locally recommended biological options for this fungal disease where available."
+      ],
+      "chemical": [
+        "No verified current Indian strawberry-specific dose located in the reviewed source set. Use local horticulture guidance and current product label if treatment is justified."
+      ],
+      "safety": [
+        "Follow the current product label, approved dose, PHI/re-entry requirements and required PPE."
+      ]
+    },
+    "hi": {
+      "monitoring": [
+        "लाल-बैंगनी धब्बे और जले हुए पत्ते जैसे लक्षण की नियमित जांच करें, खासकर अनुकूल मौसम में."
+      ],
+      "cultural": [
+        "संक्रमित हिस्से हटाएं, स्वच्छता बनाए रखें और पत्तियों का लंबे समय तक गीला रहना कम करें।"
+      ],
+      "biological": [
+        "जहां उपलब्ध हो, इस स्ट्रॉबेरी में लीफ स्कॉर्च के लिए स्थानीय रूप से अनुशंसित जैविक नियंत्रण विकल्पों को प्राथमिकता दें।"
+      ],
+      "chemical": [
+        "इस रोग के लिए वर्तमान भारत-विशिष्ट सत्यापित मात्रा उपलब्ध नहीं है। केवल वर्तमान में स्वीकृत उत्पाद और लेबल निर्देशों का उपयोग करें।"
+      ],
+      "safety": [
+        "वर्तमान उत्पाद लेबल, स्वीकृत मात्रा, कटाई-पूर्व प्रतीक्षा अवधि/पुनःप्रवेश अवधि और आवश्यक सुरक्षा उपकरणों का पालन करें।"
+      ]
+    },
+    "mr": {
+      "monitoring": [
+        "लालसर-जांभळे डाग आणि जळल्यासारखी पाने साठी नियमित पाहणी करा, विशेषतः अनुकूल हवामानात."
+      ],
+      "cultural": [
+        "बाधित भाग काढा, स्वच्छता राखा आणि पाने जास्त वेळ ओलसर राहणे कमी करा."
+      ],
+      "biological": [
+        "उपलब्ध असल्यास या स्ट्रॉबेरीतील पान करपा साठी स्थानिक शिफारसीनुसार जैविक नियंत्रण पर्यायांना प्राधान्य द्या."
+      ],
+      "chemical": [
+        "या रोगासाठी सध्याची भारत-विशिष्ट सत्यापित मात्रा उपलब्ध नाही. फक्त सध्या मान्य उत्पादन आणि लेबल सूचनांनुसार वापरा."
+      ],
+      "safety": [
+        "सध्याचे उत्पादन लेबल, मान्य मात्रा, काढणीपूर्व प्रतीक्षा कालावधी/पुन्हा प्रवेश कालावधी आणि आवश्यक सुरक्षा साधनांचे पालन करा."
+      ]
+    }
+  },
+  "Strawberry_Healthy": {
+    "en": {
+      "monitoring": [
+        "Inspect regularly for leaf scorch, spots, pests or abnormal growth and unexpected changes."
+      ],
+      "cultural": [
+        "Maintain sanitation, balanced irrigation/nutrition, healthy planting material and good airflow where appropriate."
+      ],
+      "biological": [
+        "No disease-specific biological control is needed while the crop is healthy."
+      ],
+      "chemical": [
+        "No pesticide recommendation unless a pest or disease is identified."
+      ],
+      "safety": [
+        "Do not spray crop-protection products unless a pest or disease is identified and treatment is justified."
+      ]
+    },
+    "hi": {
+      "monitoring": [
+        "पत्ती करपा, धब्बे, कीट या असामान्य वृद्धि की नियमित जांच करें और असामान्य बदलाव दिखने पर ध्यान दें।"
+      ],
+      "cultural": [
+        "स्वच्छता बनाए रखें, संतुलित सिंचाई व पोषण दें और स्वस्थ रोपण सामग्री का उपयोग करें।"
+      ],
+      "biological": [
+        "फसल स्वस्थ होने पर किसी रोग-विशिष्ट जैविक उपचार की आवश्यकता नहीं है।"
+      ],
+      "chemical": [
+        "कोई रासायनिक उपचार अनुशंसित नहीं है। कीट या रोग की पहचान होने पर ही उपचार करें।"
+      ],
+      "safety": [
+        "जब तक कीट या रोग की पुष्टि न हो, अनावश्यक फसल-सुरक्षा उत्पादों का छिड़काव न करें।"
+      ]
+    },
+    "mr": {
+      "monitoring": [
+        "पानावरील करपा, डाग, कीड किंवा असामान्य वाढ साठी नियमित पाहणी करा आणि असामान्य बदल दिसल्यास लक्ष द्या."
+      ],
+      "cultural": [
+        "शेत/बागेची स्वच्छता राखा, संतुलित सिंचन व पोषण द्या आणि निरोगी लागवड साहित्य वापरा."
+      ],
+      "biological": [
+        "पीक निरोगी असल्यास रोग-विशिष्ट जैविक उपचाराची गरज नाही."
+      ],
+      "chemical": [
+        "रासायनिक उपचाराची शिफारस नाही. कीड किंवा रोग ओळखल्यानंतरच उपचार करा."
+      ],
+      "safety": [
+        "कीड किंवा रोगाची खात्री नसताना अनावश्यक पीक संरक्षण उत्पादनांची फवारणी करू नका."
+      ]
+    }
+  }
 };
 
+function translateIPM(classKey, lang = "en") {
+  const profile = IPM_PROFILES[classKey];
 
-/*
- * The ML model uses PlantVillage-style labels.
- * Our application uses its own classKey names.
- *
- * So we translate the model's label into the key
- * that our existing recommendation/translation system understands.
- */
+  if (!profile) {
+    return null;
+  }
+
+  return profile[lang] || profile.en || null;
+}
+
+
+// ============================================================
+// MODEL LABEL → INTERNAL CLASS KEY
+// ============================================================
+
 const MODEL_LABEL_MAP = {
-  // =========================
-  // TOMATO
-  // =========================
+  // APPLE
+  "Apple Scab": "Apple_Scab",
+  "Apple with Black Rot": "Apple_Black_Rot",
+  "Cedar Apple Rust": "Apple_Cedar_Rust",
+  "Healthy Apple": "Apple_Healthy",
 
-  "Tomato with Bacterial Spot": "Tomato_Bacterial_Spot",
-  "Tomato with Early Blight": "Tomato_Early_Blight",
-  "Tomato with Late Blight": "Tomato_Late_Blight",
-  "Tomato with Leaf Mold": "Tomato_Leaf_Mold",
-  "Tomato with Septoria Leaf Spot": "Tomato_Septoria_Leaf_Spot",
-  "Tomato with Spider Mites or Two-spotted Spider Mite":
-    "Tomato_Spider_Mites",
-  "Tomato with Target Spot": "Tomato_Target_Spot",
-  "Tomato Yellow Leaf Curl Virus": "Tomato_Leaf_Curl_Virus",
-  "Tomato Mosaic Virus": "Tomato_Mosaic_Virus",
-  "Healthy Tomato Plant": "Tomato_Healthy",
+  // CHERRY
+  "Cherry with Powdery Mildew": "Cherry_Powdery_Mildew",
+  "Healthy Cherry Plant": "Cherry_Healthy",
 
-  // =========================
+  // MAIZE
+  "Corn (Maize) with Cercospora and Gray Leaf Spot":
+    "Maize_Cercospora_Gray_Leaf_Spot",
+  "Corn (Maize) with Common Rust": "Maize_Common_Rust",
+  "Corn (Maize) with Northern Leaf Blight":
+    "Maize_Northern_Leaf_Blight",
+  "Healthy Corn (Maize) Plant": "Maize_Healthy",
+
+  // GRAPE
+  "Grape with Black Rot": "Grape_Black_Rot",
+  "Grape with Esca (Black Measles)": "Grape_Esca",
+  "Grape with Isariopsis Leaf Spot":
+    "Grape_Isariopsis_Leaf_Spot",
+  "Healthy Grape Plant": "Grape_Healthy",
+
+  // PEACH
+  "Peach with Bacterial Spot": "Peach_Bacterial_Spot",
+  "Healthy Peach Plant": "Peach_Healthy",
+
+  // BELL PEPPER
+  "Bell Pepper with Bacterial Spot":
+    "Bell_Pepper_Bacterial_Spot",
+  "Healthy Bell Pepper Plant": "Bell_Pepper_Healthy",
+
   // POTATO
-  // =========================
-
   "Potato with Early Blight": "Potato_Early_Blight",
   "Potato with Late Blight": "Potato_Late_Blight",
   "Healthy Potato Plant": "Potato_Healthy",
 
-  // =========================
-  // MAIZE / CORN
-  // =========================
+  // STRAWBERRY
+  "Strawberry with Leaf Scorch": "Strawberry_Leaf_Scorch",
+  "Healthy Strawberry Plant": "Strawberry_Healthy",
 
-  "Corn (Maize) with Cercospora and Gray Leaf Spot":
-    "Maize_Cercospora_Gray_Leaf_Spot",
-
-  "Corn (Maize) with Common Rust":
-    "Maize_Common_Rust",
-
-  "Corn (Maize) with Northern Leaf Blight":
-    "Maize_Northern_Leaf_Blight",
-
-  "Healthy Corn (Maize) Plant":
-    "Maize_Healthy",
+  // TOMATO
+  "Tomato with Bacterial Spot": "Tomato_Bacterial_Spot",
+  "Tomato with Early Blight": "Tomato_Early_Blight",
+  "Tomato with Late Blight": "Tomato_Late_Blight",
+  "Tomato with Leaf Mold": "Tomato_Leaf_Mold",
+  "Tomato with Septoria Leaf Spot":
+    "Tomato_Septoria_Leaf_Spot",
+  "Tomato with Spider Mites or Two-spotted Spider Mite":
+    "Tomato_Spider_Mites",
+  "Tomato with Target Spot": "Tomato_Target_Spot",
+  "Tomato Yellow Leaf Curl Virus":
+    "Tomato_Leaf_Curl_Virus",
+  "Tomato Mosaic Virus": "Tomato_Mosaic_Virus",
+  "Healthy Tomato Plant": "Tomato_Healthy"
 };
 
 
-/*
- * REAL ML DETECTION
- *
- * Camera image
- *     ↓
- * Hugging Face
- *     ↓
- * ResNet50
- *     ↓
- * model label + confidence
- */
+// ============================================================
+// DETECT DISEASE
+// ============================================================
+
 async function detectDiseaseClass(
   imageBuffer,
   contentType = "image/jpeg",
   crop = "tomato"
 ) {
-  if (!imageBuffer || !imageBuffer.length) {
-    throw new Error("No image provided");
+  if (!imageBuffer || !Buffer.isBuffer(imageBuffer)) {
+    throw new Error("Invalid image buffer");
   }
 
   const aiServiceUrl = process.env.AI_SERVICE_URL;
 
   if (!aiServiceUrl) {
-    throw new Error("AI_SERVICE_URL is missing from backend .env");
+    throw new Error("AI_SERVICE_URL is not configured");
   }
 
-  const form = new FormData();
+  const formData = new FormData();
 
-  form.append(
-    "file",
-    new Blob([imageBuffer], { type: contentType }),
-    "crop-image.jpg"
+  const blob = new Blob(
+    [imageBuffer],
+    {
+      type: contentType,
+    }
   );
 
-  form.append("crop", crop);
+  formData.append(
+    "file",
+    blob,
+    "scan.jpg"
+  );
 
-  const response = await fetch(aiServiceUrl, {
-    method: "POST",
-    body: form,
-  });
+  formData.append(
+    "crop",
+    crop
+  );
 
-  const data = await response.json();
+  const response = await fetch(
+    `${aiServiceUrl}/predict`,
+    {
+      method: "POST",
+      body: formData,
+    }
+  );
+
+  const text = await response.text();
+
+  let data;
+
+  try {
+    data = JSON.parse(text);
+  } catch {
+    throw new Error(
+      `AI service returned invalid response: ${text}`
+    );
+  }
 
   if (!response.ok) {
     throw new Error(
       data.detail ||
       data.message ||
-      "ML service prediction failed"
+      `AI service error: ${response.status}`
     );
   }
 
-  if (!data.disease) {
-    throw new Error("ML service returned no disease");
-  }
-
-  return {
-    classKey: MODEL_LABEL_MAP[data.disease] || null,
-    modelLabel: data.disease,
-    confidence: data.confidence,
-    crop: data.crop,
-    topPredictions: data.top_predictions || [],
-  };
+return {
+  classKey: MODEL_LABEL_MAP[data.disease] || null,
+  modelLabel: data.disease,
+  confidence: data.confidence,
+  crop: data.crop,
+  predictedCrop: data.predicted_crop,
+  cropMatch: data.crop_match,
+  topPredictions: data.top_predictions || [],
+  overallPredictions: data.overall_predictions || [],
+};
 }
 
-function translateIPM(classKey, lang = "en") {
-  const profile = IPM_PROFILES[classKey];
 
-  if (!profile) return null;
 
-  return profile[lang] || profile.en;
-}
+
 function translateProfile(
   classKey,
   lang = "en",
   modelConfidence = null
 ) {
   const profile = DISEASE_PROFILES.find(
-    (p) => p.classKey === classKey
+    (item) => item.classKey === classKey
   );
 
-  // ----------------------------------
-  // Known detailed profile
-  // ----------------------------------
-  if (profile) {
-    return {
-      classKey,
+  if (!profile) {
+    console.warn(
+      `No disease profile found for classKey: ${classKey}`
+    );
 
-      crop:
-        profile.crop[lang] ||
-        profile.crop.en,
-
-      disease:
-        profile.disease[lang] ||
-        profile.disease.en,
-
-      severity: profile.severity,
-
-      severityPercent:
-        profile.severityPercent,
-
-      confidence:
-        modelConfidence !== null
-          ? modelConfidence
-          : profile.confidence,
-
-      recommendation:
-        profile.recommendation[lang] ||
-        profile.recommendation.en,
-
-      ipm: translateIPM(classKey, lang),
-    };
-  }
-
-  // ----------------------------------
-  // Generic fallback for supported ML
-  // diseases that don't have a custom
-  // profile yet
-  // ----------------------------------
-
-  const fallbackNames = {
-    Tomato_Bacterial_Spot: {
-      en: ["Tomato", "Bacterial Spot"],
-      hi: ["टमाटर", "जीवाणु धब्बा"],
-      mr: ["टोमॅटो", "जिवाणू ठिपका"],
-    },
-
-    Tomato_Late_Blight: {
-      en: ["Tomato", "Late Blight"],
-      hi: ["टमाटर", "पछेती झुलसा"],
-      mr: ["टोमॅटो", "उशिरा करपा"],
-    },
-
-    Tomato_Leaf_Mold: {
-      en: ["Tomato", "Leaf Mold"],
-      hi: ["टमाटर", "पत्ती फफूंद"],
-      mr: ["टोमॅटो", "पानावरील बुरशी"],
-    },
-
-    Tomato_Septoria_Leaf_Spot: {
-      en: ["Tomato", "Septoria Leaf Spot"],
-      hi: ["टमाटर", "सेप्टोरिया पत्ती धब्बा"],
-      mr: ["टोमॅटो", "सेप्टोरिया पानावरील ठिपका"],
-    },
-
-    Tomato_Spider_Mites: {
-      en: ["Tomato", "Spider Mites"],
-      hi: ["टमाटर", "स्पाइडर माइट"],
-      mr: ["टोमॅटो", "कोळी माइट"],
-    },
-
-    Tomato_Target_Spot: {
-      en: ["Tomato", "Target Spot"],
-      hi: ["टमाटर", "टार्गेट स्पॉट"],
-      mr: ["टोमॅटो", "टार्गेट स्पॉट"],
-    },
-
-    Tomato_Mosaic_Virus: {
-      en: ["Tomato", "Mosaic Virus"],
-      hi: ["टमाटर", "मोज़ेक वायरस"],
-      mr: ["टोमॅटो", "मोझॅक विषाणू"],
-    },
-
-    Tomato_Healthy: {
-      en: ["Tomato", "Healthy"],
-      hi: ["टमाटर", "स्वस्थ"],
-      mr: ["टोमॅटो", "निरोगी"],
-    },
-
-    Maize_Cercospora_Gray_Leaf_Spot: {
-      en: ["Maize", "Cercospora and Gray Leaf Spot"],
-      hi: ["मक्का", "सर्कोस्पोरा और ग्रे लीफ स्पॉट"],
-      mr: ["मका", "सर्कोस्पोरा आणि ग्रे लीफ स्पॉट"],
-    },
-
-    Maize_Common_Rust: {
-      en: ["Maize", "Common Rust"],
-      hi: ["मक्का", "कॉमन रस्ट"],
-      mr: ["मका", "कॉमन रस्ट"],
-    },
-
-    Maize_Northern_Leaf_Blight: {
-      en: ["Maize", "Northern Leaf Blight"],
-      hi: ["मक्का", "नॉर्दर्न लीफ ब्लाइट"],
-      mr: ["मका", "नॉर्दर्न लीफ ब्लाइट"],
-    },
-
-    Maize_Healthy: {
-      en: ["Maize", "Healthy"],
-      hi: ["मक्का", "स्वस्थ"],
-      mr: ["मका", "निरोगी"],
-    },
-
-    Potato_Early_Blight: {
-      en: ["Potato", "Early Blight"],
-      hi: ["आलू", "अगेती झुलसा"],
-      mr: ["बटाटा", "लवकर करपा"],
-    },
-
-    Potato_Late_Blight: {
-      en: ["Potato", "Late Blight"],
-      hi: ["आलू", "पछेती झुलसा"],
-      mr: ["बटाटा", "उशिरा करपा"],
-    },
-
-    Potato_Healthy: {
-      en: ["Potato", "Healthy"],
-      hi: ["आलू", "स्वस्थ"],
-      mr: ["बटाटा", "निरोगी"],
-    },
-  };
-
-  const names = fallbackNames[classKey];
-
-  // Completely unknown class
-  if (!names) {
     return null;
   }
 
-  const [crop, disease] =
-    names[lang] || names.en;
-
-  const isHealthy =
-    classKey.endsWith("_Healthy");
+const ipm =
+  translateIPM(classKey, lang) ||
+  profile.ipm ||
+  null;
 
   return {
-    classKey,
-
-    crop,
-
-    disease,
-
-    severity: isHealthy ? "Low" : "Medium",
-
-    severityPercent: isHealthy ? 8 : 50,
+    crop: profile.crop,
+    disease: profile.disease,
+    severity: profile.severity,
+    severityPercent: profile.severityPercent,
 
     confidence:
       modelConfidence !== null
         ? modelConfidence
-        : 0,
+        : profile.confidence,
 
-    recommendation:
-      isHealthy
-        ? (
-            {
-              en: "No major disease signs detected. Continue regular crop monitoring and maintain good field sanitation.",
-              hi: "रोग के कोई प्रमुख लक्षण नहीं पाए गए। नियमित फसल निगरानी जारी रखें और खेत की स्वच्छता बनाए रखें।",
-              mr: "रोगाची ठळक लक्षणे आढळली नाहीत. नियमित पिकाची पाहणी सुरू ठेवा आणि शेताची स्वच्छता राखा.",
-            }[lang] ||
-            "No major disease signs detected. Continue regular crop monitoring and maintain good field sanitation."
-          )
-        : (
-            {
-              en: "Disease symptoms detected. Inspect the crop closely, remove severely affected plant material where practical, maintain field sanitation, and follow locally approved disease-management guidance if treatment is required.",
-              hi: "रोग के लक्षण पाए गए हैं। फसल की सावधानीपूर्वक जांच करें, जहां संभव हो गंभीर रूप से प्रभावित पौधों के हिस्से हटाएं, खेत की स्वच्छता बनाए रखें और उपचार आवश्यक होने पर स्थानीय रूप से स्वीकृत रोग-प्रबंधन सलाह का पालन करें।",
-              mr: "रोगाची लक्षणे आढळली आहेत. पिकाची काळजीपूर्वक पाहणी करा, शक्य असल्यास जास्त बाधित भाग काढून टाका, शेताची स्वच्छता राखा आणि उपचाराची गरज असल्यास स्थानिक मान्य रोग व्यवस्थापन सल्ल्याचे पालन करा.",
-            }[lang] ||
-            "Disease symptoms detected. Inspect the crop closely, maintain field sanitation, and follow locally approved disease-management guidance."
-          ),
+    recommendation: profile.recommendation,
 
-    ipm: null,
+    ipm
   };
 }
 
 
+// ============================================================
+// EXPORTS
+// ============================================================
+
 module.exports = {
   detectDiseaseClass,
   translateProfile,
+  translateIPM,
   DISEASE_PROFILES,
+  IPM_PROFILES,
+  MODEL_LABEL_MAP
 };

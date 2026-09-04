@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Leaf, User, Lock, ArrowRight, MapPin } from "lucide-react";
+import { Leaf, User, Lock, ArrowRight, Eye, EyeOff } from "lucide-react";
 import { COLORS } from "../styles/theme";
 import PrimaryButton from "../components/PrimaryButton";
 import { loginUser, registerUser } from "../api/client";
@@ -19,58 +19,14 @@ export default function LoginScreen() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
-  const [location, setLocation] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
   const { login: setAuthUser } = useAuth();
 
- async function detectLocation() {
-  if (!navigator.geolocation) {
-    setLocation(null);
-    return;
-  }
 
-  navigator.geolocation.getCurrentPosition(
-    async (pos) => {
-      const lat = pos.coords.latitude;
-      const lng = pos.coords.longitude;
-
-      try {
-        const res = await fetch(
-          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=10`
-        );
-
-        const data = await res.json();
-        const address = data.address || {};
-
-        const city =
-          address.city ||
-          address.town ||
-          address.village ||
-          address.municipality ||
-          address.county ||
-          "Unknown location";
-
-        const state = address.state || "";
-
-        setLocation({
-          lat,
-          lng,
-          label: state ? `${city}, ${state}` : city,
-        });
-      } catch (error) {
-        setLocation({
-          lat,
-          lng,
-          label: "Current location",
-        });
-      }
-    },
-    () => setLocation(null)
-  );
-}
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
@@ -176,7 +132,26 @@ export default function LoginScreen() {
             <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.inkSoft, marginBottom: 6 }}>{t("password")}</label>
             <div className="cs-input-row" style={{ ...inputRow, marginBottom: 16 }}>
               <Lock size={16} color={COLORS.inkSoft} />
-              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" style={inputBare} />
+              <input
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                style={inputBare}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                title={showPassword ? "Hide password" : "Show password"}
+                style={passwordToggleStyle}
+              >
+                {showPassword ? (
+                  <EyeOff size={17} color={COLORS.inkSoft} />
+                ) : (
+                  <Eye size={17} color={COLORS.inkSoft} />
+                )}
+              </button>
             </div>
 
             {error && <p style={{ color: COLORS.danger, fontSize: 12.5, margin: "0 0 12px" }}>{error}</p>}
@@ -184,18 +159,31 @@ export default function LoginScreen() {
             <PrimaryButton type="submit" icon={ArrowRight} disabled={loading}>
               {loading ? t("pleaseWait") : mode === "login" ? t("login") : t("createAccount")}
             </PrimaryButton>
+            <div
+  style={{
+    marginTop: 18,
+    textAlign: "center",
+  }}
+>
+  <button
+    type="button"
+    onClick={() => navigate("/expert")}
+    style={{
+      border: "none",
+      background: "transparent",
+      color: COLORS.forest,
+      fontSize: 12.5,
+      fontWeight: 700,
+      cursor: "pointer",
+      fontFamily: "'Inter', sans-serif",
+    }}
+  >
+    Expert Portal →
+  </button>
+</div>
           </form>
 
-          <button onClick={detectLocation} type="button" className="cs-location-btn" style={{
-            marginTop: 20, display: "flex", alignItems: "center", gap: 8, cursor: "pointer",
-            padding: "12px 14px", background: location ? "#E4EEDF" : "#EFEDE0", borderRadius: 12,
-            border: "none", textAlign: "left", width: "100%",
-          }}>
-            <MapPin size={16} color={COLORS.leaf} />
-            <span style={{ fontSize: 12.5, color: COLORS.inkSoft }}>
-              {location ? `📍 ${location.label}` : t("detectLocation")}
-            </span>
-          </button>
+
         </div>
       </div>
     </div>
@@ -211,3 +199,14 @@ const inputRow = {
   border: `1px solid ${COLORS.line}`, borderRadius: 12, padding: "13px 14px", marginBottom: 14,
 };
 const inputBare = { border: "none", outline: "none", background: "transparent", fontSize: 14, flex: 1, fontFamily: "'Inter', sans-serif", width: "100%" };
+const passwordToggleStyle = {
+  border: "none",
+  background: "transparent",
+  padding: 2,
+  margin: 0,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  cursor: "pointer",
+  flexShrink: 0,
+};

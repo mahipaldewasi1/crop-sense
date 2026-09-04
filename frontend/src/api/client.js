@@ -70,7 +70,7 @@ export async function getScanHistory(lang = "en") {
   return handleResponse(res);
 }
 export async function getMonitoring() {
-  const res = await fetch(`${API_URL}/scan/monitoring`, {
+  const res = await fetch(`${API_URL}/scan/follow-ups`, {
     headers: {
       Authorization: `Bearer ${getToken()}`,
     },
@@ -78,14 +78,36 @@ export async function getMonitoring() {
 
   return handleResponse(res);
 }
-export async function startFollowUp(scanId) {
+  export async function startFollowUp(scanId) {
   const res = await fetch(`${API_URL}/scan/${scanId}/follow-up`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${getToken()}`,
       "Content-Type": "application/json",
     },
+    body: JSON.stringify({
+      days: 7,
+    }),
   });
+
+  return handleResponse(res);
+}
+export async function uploadFollowUpScan(scanId, imageFile, lang = "en") {
+  const formData = new FormData();
+
+  formData.append("image", imageFile);
+  formData.append("lang", lang);
+
+  const res = await fetch(
+    `${API_URL}/scan/${scanId}/follow-up/scan`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${getToken()}`,
+      },
+      body: formData,
+    }
+  );
 
   return handleResponse(res);
 }
@@ -109,7 +131,24 @@ export async function getFollowUp(id) {
 
   return handleResponse(res);
 }
+// ==========================================
+// REQUEST EXPERT REVIEW
+// ==========================================
 
+export async function requestExpertReview(scanId) {
+  const res = await fetch(
+    `${API_URL}/expert/cases/${scanId}/request-review`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${getToken()}`,
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  return handleResponse(res);
+}
 export async function getNearbyStores(lat, lng) {
   const res = await fetch(`${API_URL}/stores?lat=${lat}&lng=${lng}`);
   return handleResponse(res);
@@ -132,5 +171,110 @@ export async function getWeather(lat, lng) {
   }
 
   return res.json();
+}
+export async function registerExpert({
+  name,
+  phone,
+  password,
+  qualification,
+  specialization,
+  organization,
+}) {
+  const res = await fetch(`${API_URL}/auth/expert/register`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      name,
+      phone,
+      password,
+      qualification,
+      specialization,
+      organization,
+    }),
+  });
+
+  return handleResponse(res);
+}
+
+
+export async function loginExpert({ phone, password }) {
+  const res = await fetch(`${API_URL}/auth/expert/login`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      phone,
+      password,
+    }),
+  });
+
+  return handleResponse(res);
+}
+export async function getExpertCases() {
+  const res = await fetch(
+    `${API_URL}/expert/cases`,
+    {
+      headers: {
+        Authorization: `Bearer ${getToken()}`,
+      },
+    }
+  );
+
+  return handleResponse(res);
+}
+export async function getExpertCase(scanId) {
+  const res = await fetch(
+    `${API_URL}/expert/cases/${scanId}`,
+    {
+      headers: {
+        Authorization: `Bearer ${getToken()}`,
+      },
+    }
+  );
+
+  return handleResponse(res);
+}
+
+
+export async function submitExpertReview(
+  scanId,
+  advice
+) {
+  const res = await fetch(
+    `${API_URL}/expert/cases/${scanId}/review`,
+    {
+      method: "POST",
+
+      headers: {
+        "Content-Type": "application/json",
+
+        Authorization:
+          `Bearer ${getToken()}`,
+      },
+
+      body: JSON.stringify({
+        advice,
+      }),
+    }
+  );
+
+  return handleResponse(res);
+}
+export function getMediaUrl(url) {
+  if (!url) return "";
+
+  if (
+    url.startsWith("http://") ||
+    url.startsWith("https://")
+  ) {
+    return url;
+  }
+
+  const backendUrl = API_URL.replace(/\/api\/?$/, "");
+
+  return `${backendUrl}${url.startsWith("/") ? url : `/${url}`}`;
 }
 export { API_URL, getToken };

@@ -9,7 +9,11 @@ export default function Layout({ children }) {
   return (
     <div style={{ display: "flex", minHeight: "100vh", background: COLORS.bg }}>
       <style>{`
-        .cs-layout-main { flex: 1; min-width: 0; }
+        .cs-layout-main {
+          flex: 1;
+          min-width: 0;
+          padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 24px);
+        }
         .cs-hamburger {
           display: flex; align-items: center; justify-content: center;
           width: 40px; height: 40px; border-radius: 10px;
